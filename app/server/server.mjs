@@ -8,6 +8,7 @@ import {
   getWalletByLineAccessToken,
   issueReward,
   migrate,
+  pingDatabase,
   recordEvent,
   redeemReward,
   registerCustomer,
@@ -20,6 +21,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, '..')
 const distDir = path.join(root, 'dist')
 const port = Number(process.env.PORT ?? 8787)
+const serverStartedAt = Date.now()
 
 const send = (res, status, body) => {
   res.writeHead(status, { 'content-type': 'application/json; charset=utf-8' })
@@ -43,7 +45,19 @@ const requireAdmin = (url, body = {}) => {
 }
 
 const routeApi = async (req, res, url) => {
-  if (url.pathname === '/api/health') return send(res, 200, { ok: true })
+  if (url.pathname === '/api/health') {
+    let database = 'ok'
+    try {
+      await pingDatabase()
+    } catch {
+      database = 'error'
+    }
+    return send(res, 200, {
+      ok: true,
+      database,
+      uptime: (Date.now() - serverStartedAt) / 1000,
+    })
+  }
 
   if (url.pathname === '/api/bootstrap' && req.method === 'POST') {
     const body = await readBody(req)

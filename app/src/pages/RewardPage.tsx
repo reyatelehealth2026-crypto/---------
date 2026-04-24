@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import confetti from 'canvas-confetti'
 import { motion } from 'framer-motion'
@@ -7,13 +7,30 @@ import { formatThaiDate } from '../lib/campaign'
 import { gameAssets, getCapsuleTheme } from '../lib/gameAssets'
 import { useGame } from '../context/GameContext'
 import { openLineOfficialAccount } from '../lib/lineLiff'
+import AppHeader from '../components/AppHeader'
+import ErrorBanner from '../components/ErrorBanner'
+
+type RewardStep = 'friend' | 'share' | 'done'
+
+const resolveStep = (friendUnlocked: boolean, shareBonusClaimed: boolean): RewardStep => {
+  if (!friendUnlocked) return 'friend'
+  if (!shareBonusClaimed) return 'share'
+  return 'done'
+}
 
 export default function RewardPage() {
   const navigate = useNavigate()
   const { state, confirmFriendGateManually, claimShareBonus } = useGame()
-  const [shareState, setShareState] = useState<'idle' | 'done'>(state.shareBonusClaimed ? 'done' : 'idle')
   const reward = state.rewards.find((item) => item.id === state.lastRewardId) ?? state.rewards[0]
   const capsuleTheme = useMemo(() => getCapsuleTheme(reward?.tier), [reward?.tier])
+  const step = resolveStep(state.friendUnlocked, state.shareBonusClaimed)
+  const [skippedShare, setSkippedShare] = useState(false)
+
+  useEffect(() => {
+    if (step !== 'done' && !skippedShare) return
+    const id = window.setTimeout(() => navigate('/wallet'), 1500)
+    return () => window.clearTimeout(id)
+  }, [navigate, skippedShare, step])
 
   if (!reward) {
     return (
@@ -42,16 +59,20 @@ export default function RewardPage() {
     if (state.shareBonusClaimed) return
     try {
       await claimShareBonus()
-      setShareState('done')
       confetti({ particleCount: 60, spread: 55, origin: { y: 0.75 } })
     } catch {
       // GameContext stores the visible error.
     }
   }
 
+  const unlocked = state.friendUnlocked
+  const showingFinalButton = step === 'done' || skippedShare
+
   return (
     <div className="min-h-[100dvh] bg-parchment px-5 pb-24 pt-6 text-ink-dark">
       <div className="mx-auto max-w-[460px]">
+        <AppHeader showBack backLabel="ไป Wallet" onBack={() => navigate('/wallet')} />
+
         <section
           className="relative overflow-hidden rounded-[8px] p-5 text-center shadow-elevated"
           style={{ background: `linear-gradient(180deg, ${capsuleTheme.soft} 0%, #FFFDF7 100%)` }}
@@ -89,16 +110,34 @@ export default function RewardPage() {
           </p>
           <h1 className="relative mt-1 font-display text-4xl font-semibold leading-tight text-ink-dark">{reward.name}</h1>
           <p className="relative mx-auto mt-2 max-w-xs text-sm leading-6 text-ink-medium">{reward.description}</p>
+
+          {unlocked && (
+            <div className="relative mt-4 rounded-[8px] bg-white/85 p-4 text-left shadow-sm">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-light">Redeem code</p>
+                  <p className="mt-1 font-mono text-2xl font-semibold text-pharmacy-green">{reward.code}</p>
+                </div>
+                <Ticket className="text-gold" size={30} />
+              </div>
+              <p className="mt-3 rounded-[8px] bg-sky-wash p-3 text-sm leading-6 text-ink-medium">
+                ใช้ได้ถึง {formatThaiDate(reward.expiryDate)} ที่ {state.campaign.name}
+                <br />
+                {reward.terms}
+              </p>
+            </div>
+          )}
         </section>
 
-        {!state.friendUnlocked ? (
+        {step === 'friend' && (
           <section className="mt-4 rounded-[8px] bg-deep-green p-5 text-white shadow-elevated">
             <div className="flex items-start gap-4">
               <div className="grid size-12 shrink-0 place-items-center rounded-[8px] bg-white/15">
                 <LockKeyhole size={24} />
               </div>
               <div>
-                <h2 className="font-display text-2xl font-semibold">ปลดล็อกคูปองด้วย LINE OA</h2>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Step 2 / 3</p>
+                <h2 className="mt-1 font-display text-2xl font-semibold">ปลดล็อกคูปองด้วย LINE OA</h2>
                 <p className="mt-2 text-sm leading-6 text-white/80">
                   เพิ่มเพื่อน LINE @clinicya เพื่อเก็บคูปองไว้ใน Wallet และรับข่าวสารจาก CNY HEALTHCARE
                 </p>
@@ -113,11 +152,7 @@ export default function RewardPage() {
               </div>
             </div>
 
-            {state.error && (
-              <div className="mt-4 rounded-[8px] bg-alert-coral/15 px-4 py-3 text-sm leading-6 text-white">
-                {state.error}
-              </div>
-            )}
+            <ErrorBanner message={state.error} className="mt-4" />
 
             <div className="mt-4 grid gap-3">
               <button
@@ -137,47 +172,47 @@ export default function RewardPage() {
                 {state.isSubmitting ? 'กำลังยืนยันสิทธิ์...' : 'ฉันเพิ่มเพื่อนแล้ว ไปต่อ'}
               </button>
             </div>
-
-            <p className="mt-3 text-xs leading-5 text-white/75">
-              หาก LINE ยังตรวจสถานะไม่ได้ ให้เปิด @clinicya แล้วกลับมากดยืนยันเองเพื่อปลดล็อกคูปองชั่วคราว
-            </p>
           </section>
-        ) : (
-          <section className="relative mt-4 overflow-hidden rounded-[8px] bg-white p-5 shadow-sm">
-            <img
-              src={gameAssets.backgrounds.workspace}
-              alt=""
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 size-full object-cover opacity-10"
-            />
-            <div className="relative flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-light">Redeem code</p>
-                <p className="mt-1 font-mono text-2xl font-semibold text-pharmacy-green">{reward.code}</p>
-              </div>
-              <Ticket className="text-gold" size={34} />
-            </div>
-            <div className="mt-4 rounded-[8px] bg-sky-wash p-4 text-sm leading-6 text-ink-medium">
-              ใช้ได้ถึง {formatThaiDate(reward.expiryDate)} ที่ {state.campaign.name}
-              <br />
-              {reward.terms}
-            </div>
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <button
-                onClick={() => navigate('/wallet')}
-                className="rounded-[8px] border border-pharmacy-green px-4 py-3 font-semibold text-pharmacy-green"
-              >
-                เก็บใน Wallet
-              </button>
+        )}
+
+        {step === 'share' && !skippedShare && (
+          <section className="mt-4 rounded-[8px] bg-white p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Step 3 / 3</p>
+            <h2 className="mt-1 font-display text-2xl font-semibold">แชร์ให้เพื่อน รับโบนัสเพิ่ม</h2>
+            <p className="mt-2 text-sm leading-6 text-ink-medium">
+              แชร์แคมเปญไปยังเพื่อนใน LINE เพื่อรับโบนัสคูปองอีก 1 ชิ้น หรือข้ามไปเก็บใน Wallet ได้เลย
+            </p>
+            <ErrorBanner message={state.error} className="mt-3" />
+            <div className="mt-4 grid gap-3">
               <button
                 onClick={share}
-                disabled={state.isSubmitting || state.shareBonusClaimed}
-                className="flex items-center justify-center gap-2 rounded-[8px] bg-pharmacy-green px-4 py-3 font-semibold text-white disabled:bg-muted disabled:text-ink-light"
+                disabled={state.isSubmitting}
+                className="flex w-full items-center justify-center gap-2 rounded-[8px] bg-pharmacy-green px-4 py-4 font-semibold text-white disabled:bg-muted disabled:text-ink-light"
               >
-                <Share2 size={16} />
-                {shareState === 'done' ? 'รับโบนัสแล้ว' : 'แชร์รับโบนัส'}
+                <Share2 size={18} />
+                {state.isSubmitting ? 'กำลังแชร์...' : 'แชร์รับโบนัส'}
+              </button>
+              <button
+                onClick={() => setSkippedShare(true)}
+                className="rounded-[8px] border border-pharmacy-green px-4 py-3 text-sm font-semibold text-pharmacy-green"
+              >
+                ข้าม เก็บใน Wallet
               </button>
             </div>
+          </section>
+        )}
+
+        {showingFinalButton && (
+          <section className="mt-4 rounded-[8px] bg-white p-5 text-center shadow-sm">
+            <p className="text-sm leading-6 text-ink-medium">
+              คูปองถูกบันทึกใน Wallet แล้ว กำลังพาไปดูรายการรางวัล…
+            </p>
+            <button
+              onClick={() => navigate('/wallet')}
+              className="mt-4 w-full rounded-[8px] bg-pharmacy-green px-4 py-3 font-semibold text-white"
+            >
+              เก็บใน Wallet
+            </button>
           </section>
         )}
       </div>

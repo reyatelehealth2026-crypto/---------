@@ -34,6 +34,7 @@ interface GameState {
 interface GameContextType {
   state: GameState
   hasPlayed: boolean
+  existingMainReward: Reward | null
   registerCustomer: (customer: Omit<CustomerProfile, 'registeredAt'>) => Promise<WalletResponse>
   drawMainReward: () => Promise<Reward>
   unlockFriendGate: () => Promise<void>
@@ -293,10 +294,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({ ...prev, error: null }))
   }, [])
 
-  const value = useMemo<GameContextType>(
-    () => ({
+  const value = useMemo<GameContextType>(() => {
+    const existingMainReward = state.rewards.find((reward) => reward.type === 'main') ?? null
+    return {
       state,
-      hasPlayed: state.rewards.some((reward) => reward.type === 'main'),
+      hasPlayed: Boolean(existingMainReward),
+      existingMainReward,
       registerCustomer,
       drawMainReward,
       unlockFriendGate,
@@ -306,7 +309,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       refreshWallet,
       clearSession,
       clearError,
-    }),
+    }
+  },
     [
       state,
       registerCustomer,

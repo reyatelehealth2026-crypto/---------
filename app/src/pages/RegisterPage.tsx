@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ChevronLeft, HeartPulse, Phone, ShieldCheck } from 'lucide-react'
-import { isValidThaiMobile, normalizeThaiPhone, pharmacyProfile } from '../lib/campaign'
+import { HeartPulse, Phone, ShieldCheck } from 'lucide-react'
+import { isValidThaiMobile, normalizeThaiPhone } from '../lib/campaign'
 import { useGame } from '../context/GameContext'
 import { getLiffEntryUrl } from '../lib/lineLiff'
+import AppHeader from '../components/AppHeader'
+import ErrorBanner from '../components/ErrorBanner'
 
 const facebookUrl = 'https://www.facebook.com/CLINICYATH/'
 const lineAddFriendUrl = 'https://page.line.me/clinicya'
@@ -66,6 +68,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-[100dvh] bg-parchment px-5 pb-24 pt-4 text-ink-dark">
       <div className="mx-auto max-w-[460px]">
+        <AppHeader showBack backLabel="กลับหน้าแคมเปญ" onBack={() => navigate('/')} />
         {requiresLine && !hasLineSession ? (
           <div className="rounded-[8px] bg-white p-5 shadow-sm">
             <h1 className="font-display text-2xl font-semibold">เปิดผ่าน LINE ก่อนรับสิทธิ์</h1>
@@ -81,30 +84,15 @@ export default function RegisterPage() {
           </div>
         ) : (
           <>
-            <button
-              onClick={() => navigate('/')}
-              className="mb-4 flex items-center gap-2 text-sm font-semibold text-pharmacy-green"
-            >
-              <ChevronLeft size={18} />
-              กลับหน้าแคมเปญ
-            </button>
-
-            <section className="rounded-[8px] bg-deep-green p-5 text-white shadow-elevated">
-              <p className="text-sm text-white/75">{state.campaign.name || pharmacyProfile.name}</p>
-              <h1 className="mt-2 font-display text-3xl font-semibold leading-tight">
-                ลูกค้าใหม่ แอด LINE รับส่วนลดสูงสุด 600 บาท
-              </h1>
-              <p className="mt-2 text-sm leading-6 text-white/80">
-                สมัครสมาชิกกับ CNY HEALTHCARE เพื่อรับดีลพิเศษสำหรับธุรกิจสุขภาพ พร้อมอัปเดตสินค้า อาหารเสริม และอุปกรณ์การแพทย์ครบวงจรผ่าน LINE @clinicya
-              </p>
-            </section>
+            <h1 className="mt-2 font-display text-3xl font-semibold leading-tight text-ink-dark">
+              ลูกค้าใหม่ แอด LINE รับส่วนลดสูงสุด 600 บาท
+            </h1>
+            <p className="mt-2 text-sm leading-6 text-ink-medium">
+              กรอกชื่อและเบอร์เพื่อรับสิทธิ์และเก็บคูปองไว้ใน Wallet
+            </p>
 
             <form onSubmit={submit} className="mt-4 space-y-4 rounded-[8px] bg-white p-5 shadow-sm">
-              {state.error && (
-                <div className="rounded-[8px] border border-pharmacy-green/20 bg-sky-wash px-4 py-3 text-sm text-ink-medium">
-                  {state.error}
-                </div>
-              )}
+              <ErrorBanner message={state.error} tone="soft" />
 
               {state.customer && (
                 <div className="rounded-[8px] border border-pharmacy-green/20 bg-sky-wash px-4 py-3 text-sm leading-6 text-ink-medium">
@@ -151,11 +139,7 @@ export default function RegisterPage() {
                 </span>
               </label>
 
-              {error && (
-                <div className="rounded-[8px] border border-alert-coral/30 bg-alert-coral/10 px-4 py-3 text-sm text-alert-coral">
-                  {error}
-                </div>
-              )}
+              <ErrorBanner message={error} onDismiss={() => setError(null)} />
 
               <button
                 disabled={state.isSubmitting}

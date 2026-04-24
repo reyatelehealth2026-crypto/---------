@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
-  BadgeCheck,
   ChevronRight,
   ClipboardCheck,
   ExternalLink,
@@ -184,52 +183,12 @@ export default function LandingPage() {
             <div className="absolute bottom-2 left-1/2 h-4 w-52 -translate-x-1/2 rounded-full bg-ink-dark/10 blur-md" />
           </motion.div>
 
-          <div className="mt-5 grid w-full grid-cols-3 gap-2">
-            {rewardTemplates.slice(0, 3).map((reward) => (
-              <div
-                key={reward.id}
-                className="rounded-[8px] border border-white/70 bg-white/75 p-3 text-left shadow-sm backdrop-blur"
-              >
-                <Ticket size={18} className="text-gold" />
-                <p className="mt-2 text-sm font-semibold leading-snug">{reward.name}</p>
-                <p className="mt-1 text-[11px] leading-4 text-ink-light">มีจำนวนจำกัด</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-5 flex w-full items-center justify-between rounded-[8px] bg-deep-green px-4 py-3 text-left text-white shadow-elevated">
-            <div className="flex items-center gap-3">
-              <ShieldCheck size={24} className="text-gold" />
-              <div>
-                <p className="text-sm font-semibold">แคมเปญแอด LINE สำหรับลูกค้าใหม่</p>
-                <p className="text-xs text-white/75">รับส่วนลดสูงสุด 600 บาท พร้อมเก็บคูปองไว้ใน Wallet</p>
-              </div>
-            </div>
-            <BadgeCheck size={20} />
-          </div>
-
-          <div className="mt-6 flex w-full items-center justify-between gap-1">
-            {steps.map((step, index) => {
-              const Icon = step.icon
-              return (
-                <div key={step.label} className="flex flex-1 items-center">
-                  <div className="flex flex-1 flex-col items-center gap-2">
-                    <div className="grid size-10 place-items-center rounded-[8px] bg-white text-pharmacy-green shadow-sm">
-                      <Icon size={20} />
-                    </div>
-                    <span className="text-[11px] font-medium text-ink-medium">{step.label}</span>
-                  </div>
-                  {index < steps.length - 1 && <ChevronRight size={14} className="text-ink-light" />}
-                </div>
-              )
-            })}
-          </div>
         </section>
       </div>
 
       {showRules && (
         <div className="fixed inset-0 z-50 flex items-end bg-black/45">
-          <div className="mx-auto max-h-[78vh] w-full max-w-[460px] overflow-y-auto rounded-t-[16px] bg-white p-5 shadow-elevated">
+          <div className="mx-auto max-h-[82vh] w-full max-w-[460px] overflow-y-auto rounded-t-[16px] bg-white p-5 shadow-elevated">
             <div className="mb-4 flex items-start justify-between gap-4">
               <div>
                 <p className="font-display text-2xl font-semibold">กติกาแคมเปญ</p>
@@ -242,6 +201,42 @@ export default function LandingPage() {
               >
                 <X size={18} />
               </button>
+            </div>
+
+            <div className="mb-5">
+              <p className="mb-2 text-sm font-semibold text-ink-dark">ขั้นตอน</p>
+              <div className="flex w-full items-center justify-between gap-1">
+                {steps.map((step, index) => {
+                  const Icon = step.icon
+                  return (
+                    <div key={step.label} className="flex flex-1 items-center">
+                      <div className="flex flex-1 flex-col items-center gap-2">
+                        <div className="grid size-10 place-items-center rounded-[8px] bg-sky-wash text-pharmacy-green shadow-sm">
+                          <Icon size={20} />
+                        </div>
+                        <span className="text-[11px] font-medium text-ink-medium">{step.label}</span>
+                      </div>
+                      {index < steps.length - 1 && <ChevronRight size={14} className="text-ink-light" />}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="mb-5">
+              <p className="mb-2 text-sm font-semibold text-ink-dark">รางวัลตัวอย่าง</p>
+              <div className="grid grid-cols-3 gap-2">
+                {rewardTemplates.slice(0, 3).map((reward) => (
+                  <div
+                    key={reward.id}
+                    className="rounded-[8px] border border-paper-line bg-white p-3 text-left"
+                  >
+                    <Ticket size={18} className="text-gold" />
+                    <p className="mt-2 text-sm font-semibold leading-snug">{reward.name}</p>
+                    <p className="mt-1 text-[11px] leading-4 text-ink-light">มีจำนวนจำกัด</p>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="space-y-4 text-sm leading-6 text-ink-medium">

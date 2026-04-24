@@ -1,43 +1,35 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import confetti from 'canvas-confetti'
-import { ChevronLeft, Hand, Loader2, RotateCw, Smartphone, Sparkles, TicketCheck } from 'lucide-react'
-import type { Reward } from '../lib/campaign'
+import { Hand, Loader2, RotateCw, Smartphone, Sparkles, TicketCheck } from 'lucide-react'
 import { useGame } from '../context/GameContext'
-import { capsuleThemes, gameAssets, getCapsuleTheme } from '../lib/gameAssets'
-
-type GamePhase = 'intro' | 'charging' | 'drawing' | 'capsuleDropped' | 'opening' | 'completed' | 'error'
-
-type MotionPermissionEvent = typeof DeviceMotionEvent & {
-  requestPermission?: () => Promise<'granted' | 'denied'>
-}
-
-const preloadImage = (src: string) => {
-  const image = new Image()
-  image.src = src
-}
+import { gameAssets, getCapsuleTheme } from '../lib/gameAssets'
+import AppHeader from '../components/AppHeader'
+import ErrorBanner from '../components/ErrorBanner'
+import { useGameMachine } from '../hooks/useGameMachine'
 
 export default function GamePage() {
   const navigate = useNavigate()
-  const { state, hasPlayed, drawMainReward } = useGame()
-  const [phase, setPhase] = useState<GamePhase>('intro')
-  const [charge, setCharge] = useState(0)
-  const [drawnReward, setDrawnReward] = useState<Reward | null>(null)
-  const [localError, setLocalError] = useState<string | null>(null)
-  const [isDrawLocked, setIsDrawLocked] = useState(false)
-  const [isReplayRound, setIsReplayRound] = useState(false)
-  const drawLock = useRef(false)
-  const pressInterval = useRef<number | null>(null)
-  const timers = useRef<number[]>([])
+  const { state, hasPlayed } = useGame()
+  const {
+    phase,
+    charge,
+    reward,
+    isReplayRound,
+    canSpin,
+    startGame,
+    startPressCharge,
+    stopPressCharge,
+    addCharge,
+    spinMachine,
+    openCapsule,
+    retrySpin,
+    playAgain,
+  } = useGameMachine()
 
-  const customerName = state.customer?.name ?? 'ลูกค้าคนพิเศษ'
-  const existingMainReward = state.rewards.find((item) => item.type === 'main') ?? null
-  const reward = drawnReward ?? state.rewards.find((item) => item.id === state.lastRewardId) ?? existingMainReward
   const capsuleTheme = getCapsuleTheme(reward?.tier)
   const progressLabel = charge >= 100 ? 'พลังพร้อมหมุน' : `เติมพลัง ${Math.round(charge)}%`
   const meterLabel = phase === 'intro' ? 'กดเริ่มแล้วเติมพลังเครื่อง' : progressLabel
-  const canSpin = phase === 'charging' && charge >= 100 && !state.isSubmitting && !isDrawLocked
 
   const mascotImage = useMemo(() => {
     switch (phase) {
@@ -72,141 +64,6 @@ export default function GamePage() {
     }
   }, [charge, phase])
 
-  const addCharge = useCallback((amount = 9) => {
-    setCharge((value) => Math.min(100, value + amount))
-    navigator.vibrate?.(24)
-  }, [])
-
-  const stopPressCharge = useCallback(() => {
-    if (pressInterval.current) {
-      window.clearInterval(pressInterval.current)
-      pressInterval.current = null
-    }
-  }, [])
-
-  const startPressCharge = () => {
-    if (phase !== 'charging') return
-    addCharge(11)
-    stopPressCharge()
-    pressInterval.current = window.setInterval(() => addCharge(4), 120)
-  }
-
-  const schedule = (callback: () => void, delay: number) => {
-    const id = window.setTimeout(callback, delay)
-    timers.current.push(id)
-  }
-
-  useEffect(() => {
-    preloadImage(gameAssets.machine)
-    preloadImage(gameAssets.idleCapsules)
-    preloadImage(gameAssets.backgrounds.pharmacyShop)
-    Object.values(gameAssets.mascot).forEach(preloadImage)
-  }, [])
-
-  useEffect(() => {
-    if (phase === 'charging' && charge > 65) {
-      Object.values(capsuleThemes).forEach((theme) => preloadImage(theme.image))
-      preloadImage(gameAssets.openCapsule)
-      preloadImage(gameAssets.rewardTicket)
-    }
-  }, [charge, phase])
-
-  useEffect(() => {
-    if (phase !== 'charging') return undefined
-
-    let lastShakeAt = 0
-    const onDeviceMotion = (event: DeviceMotionEvent) => {
-      const acceleration = event.accelerationIncludingGravity
-      if (!acceleration) return
-      const force = Math.abs(acceleration.x ?? 0) + Math.abs(acceleration.y ?? 0) + Math.abs(acceleration.z ?? 0)
-      const now = Date.now()
-      if (force > 24 && now - lastShakeAt > 280) {
-        lastShakeAt = now
-        addCharge(10)
-      }
-    }
-
-    window.addEventListener('devicemotion', onDeviceMotion)
-    return () => window.removeEventListener('devicemotion', onDeviceMotion)
-  }, [addCharge, phase])
-
-  useEffect(() => {
-    const activeTimers = timers.current
-    return () => {
-      stopPressCharge()
-      activeTimers.forEach((id) => window.clearTimeout(id))
-    }
-  }, [stopPressCharge])
-
-  const startGame = () => {
-    const motionEvent = window.DeviceMotionEvent as MotionPermissionEvent | undefined
-    void motionEvent?.requestPermission?.().catch(() => undefined)
-    const replayReward = state.rewards.find((item) => item.type === 'main') ?? null
-    setDrawnReward(replayReward)
-    setIsReplayRound(Boolean(replayReward))
-    setCharge(12)
-    setLocalError(null)
-    setPhase('charging')
-  }
-
-  const spinMachine = async () => {
-    if (!canSpin || drawLock.current) return
-    drawLock.current = true
-    setIsDrawLocked(true)
-    setLocalError(null)
-    setPhase('drawing')
-    navigator.vibrate?.([40, 30, 70])
-
-    try {
-      if (isReplayRound && existingMainReward) {
-        setDrawnReward(existingMainReward)
-        preloadImage(getCapsuleTheme(existingMainReward.tier).image)
-        schedule(() => setPhase('capsuleDropped'), 650)
-        return
-      }
-
-      const nextReward = await drawMainReward()
-      setDrawnReward(nextReward)
-      preloadImage(getCapsuleTheme(nextReward.tier).image)
-      schedule(() => setPhase('capsuleDropped'), 850)
-    } catch (error) {
-      drawLock.current = false
-      setIsDrawLocked(false)
-      setLocalError(error instanceof Error ? error.message : 'ไม่สามารถสุ่มคูปองได้')
-      setPhase('error')
-    }
-  }
-
-  const openCapsule = () => {
-    if (!reward || phase !== 'capsuleDropped') return
-    setPhase('opening')
-    navigator.vibrate?.([30, 20, 30])
-    confetti({ particleCount: 70, spread: 60, origin: { y: 0.7 } })
-    schedule(() => {
-      setPhase('completed')
-      confetti({ particleCount: 90, spread: 70, origin: { y: 0.68 } })
-    }, 900)
-  }
-
-  const retrySpin = () => {
-    drawLock.current = false
-    setIsDrawLocked(false)
-    setLocalError(null)
-    setPhase('charging')
-    setCharge(100)
-  }
-
-  const playAgain = () => {
-    const replayReward = state.rewards.find((item) => item.type === 'main') ?? drawnReward
-    drawLock.current = false
-    setIsDrawLocked(false)
-    setIsReplayRound(Boolean(replayReward))
-    setDrawnReward(replayReward)
-    setLocalError(null)
-    setCharge(0)
-    setPhase('intro')
-  }
-
   if (!state.customer) {
     return (
       <div className="min-h-[100dvh] bg-parchment px-5 pt-6 text-ink-dark">
@@ -225,58 +82,26 @@ export default function GamePage() {
     )
   }
 
+  const handleBack = () => {
+    if (phase !== 'intro' && phase !== 'completed' && phase !== 'error') {
+      const confirmed = window.confirm('ออกจากเกมตอนนี้จะยกเลิกการหมุน ยืนยันออก?')
+      if (!confirmed) return
+    }
+    navigate('/')
+  }
+
   return (
     <div className="min-h-[100dvh] overflow-hidden bg-parchment px-5 pb-24 pt-4 text-ink-dark">
       <div className="mx-auto max-w-[460px]">
-        <button
-          onClick={() => navigate('/')}
-          className="mb-3 flex items-center gap-2 text-sm font-semibold text-pharmacy-green"
-        >
-          <ChevronLeft size={18} />
-          กลับ
-        </button>
+        <AppHeader showBack onBack={handleBack} />
 
-        <section className="relative overflow-hidden rounded-[8px] bg-deep-green p-5 text-white shadow-elevated">
-          <img
-            src={gameAssets.ui.frameBanner}
-            alt=""
-            aria-hidden="true"
-            className="pointer-events-none absolute -top-2 left-1/2 z-10 h-16 w-[92%] -translate-x-1/2 object-contain drop-shadow-[0_14px_20px_rgba(212,184,90,0.4)]"
-          />
-          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/20 to-transparent" />
-          <div className="relative z-20 flex items-start justify-between gap-3 pt-10">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <img
-                  src={gameAssets.ui.frameProfile}
-                  alt=""
-                  aria-hidden="true"
-                  className="size-14 object-contain drop-shadow-[0_8px_14px_rgba(0,0,0,0.24)]"
-                />
-                <span className="absolute inset-0 grid place-items-center text-base font-display font-semibold text-gold">
-                  {(customerName || 'C').charAt(0).toUpperCase()}
-                </span>
-              </div>
-              <div>
-                <p className="text-sm text-white/75">ถึงคิวของ {customerName}</p>
-                <h1 className="mt-1 font-display text-2xl font-semibold leading-tight">ตู้กาชาปองสุขภาพ CNY</h1>
-              </div>
-            </div>
-            <div className="rounded-full bg-white/12 px-3 py-1 text-xs font-semibold text-gold">
-              {hasPlayed ? 'ทดลองเล่นซ้ำได้' : '1 สิทธิ์ / LINE'}
-            </div>
+        {hasPlayed && (
+          <div className="mb-3 rounded-[8px] bg-gold/15 px-3 py-2 text-xs leading-5 text-ink-medium">
+            เล่นซ้ำได้ไม่จำกัดเพื่อทดลองเกม แต่คูปองจะรับได้เฉพาะครั้งแรก
           </div>
-          <p className="relative z-20 mt-3 text-sm leading-6 text-white/80">
-            แตะหรือเขย่าเครื่องเพื่อเติมพลัง แล้วหมุนรับแคปซูลคูปองจาก CNY HEALTHCARE
-          </p>
-          {hasPlayed && (
-            <p className="relative z-20 mt-3 rounded-[8px] bg-white/12 px-3 py-2 text-xs leading-5 text-white/80">
-              เล่นซ้ำได้ไม่จำกัดเพื่อทดลองเกม แต่คูปองจะรับได้เฉพาะครั้งแรกเท่านั้น
-            </p>
-          )}
-        </section>
+        )}
 
-        <section className="relative mt-4 overflow-hidden rounded-[8px] border border-white/80 bg-[radial-gradient(circle_at_50%_0%,#FFF8DF_0%,#FFFDF7_34%,#E8F6F3_100%)] p-4 shadow-[0_28px_70px_rgba(22,74,56,0.20)]">
+        <section className="relative mt-1 overflow-hidden rounded-[8px] border border-white/80 bg-[radial-gradient(circle_at_50%_0%,#FFF8DF_0%,#FFFDF7_34%,#E8F6F3_100%)] p-4 shadow-[0_28px_70px_rgba(22,74,56,0.20)]">
           <div className="pointer-events-none absolute -left-20 top-12 size-48 rounded-full bg-gold/20 blur-3xl" />
           <div className="pointer-events-none absolute -right-24 top-40 size-56 rounded-full bg-pharmacy-green/15 blur-3xl" />
           <div className="relative flex items-center justify-between gap-3">
@@ -600,11 +425,11 @@ export default function GamePage() {
           )}
 
           {phase === 'error' && (
-            <div className="mt-5 rounded-[8px] border border-alert-coral/30 bg-alert-coral/10 p-4 text-center">
-              <p className="text-sm font-semibold text-alert-coral">{localError ?? state.error ?? 'ไม่สามารถหมุนตู้ได้'}</p>
+            <div className="mt-5 space-y-3">
+              <ErrorBanner message={state.error ?? 'ไม่สามารถหมุนตู้ได้'} />
               <button
                 onClick={retrySpin}
-                className="mt-3 w-full rounded-[8px] bg-pharmacy-green px-4 py-3 font-semibold text-white"
+                className="w-full rounded-[8px] bg-pharmacy-green px-4 py-3 font-semibold text-white"
               >
                 ลองหมุนอีกครั้ง
               </button>
