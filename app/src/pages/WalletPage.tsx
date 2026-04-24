@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { TicketCheck, Timer, Wallet } from 'lucide-react'
 import { formatThaiDate, pharmacyProfile } from '../lib/campaign'
 import { useGame } from '../context/GameContext'
+import AppHeader from '../components/AppHeader'
 
 export default function WalletPage() {
   const navigate = useNavigate()
@@ -21,6 +22,7 @@ export default function WalletPage() {
   return (
     <div className="min-h-[100dvh] bg-parchment px-5 pb-24 pt-5 text-ink-dark">
       <div className="mx-auto max-w-[460px]">
+        <AppHeader showBack backLabel="หน้าแคมเปญ" onBack={() => navigate('/')} showWallet={false} />
         <section className="relative overflow-hidden rounded-[8px] bg-deep-green p-5 pt-10 text-white shadow-elevated">
           <img
             src="/ui-frame-banner.png"

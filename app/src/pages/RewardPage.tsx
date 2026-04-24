@@ -7,6 +7,7 @@ import { formatThaiDate } from '../lib/campaign'
 import { gameAssets, getCapsuleTheme } from '../lib/gameAssets'
 import { useGame } from '../context/GameContext'
 import { openLineOfficialAccount } from '../lib/lineLiff'
+import AppHeader from '../components/AppHeader'
 
 export default function RewardPage() {
   const navigate = useNavigate()
@@ -52,6 +53,7 @@ export default function RewardPage() {
   return (
     <div className="min-h-[100dvh] bg-parchment px-5 pb-24 pt-6 text-ink-dark">
       <div className="mx-auto max-w-[460px]">
+        <AppHeader showBack backLabel="ไป Wallet" onBack={() => navigate('/wallet')} />
         <section
           className="relative overflow-hidden rounded-[8px] p-5 text-center shadow-elevated"
           style={{ background: `linear-gradient(180deg, ${capsuleTheme.soft} 0%, #FFFDF7 100%)` }}

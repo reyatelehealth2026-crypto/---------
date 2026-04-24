@@ -2,10 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import confetti from 'canvas-confetti'
-import { ChevronLeft, Hand, Loader2, RotateCw, Smartphone, Sparkles, TicketCheck } from 'lucide-react'
+import { Hand, Loader2, RotateCw, Smartphone, Sparkles, TicketCheck } from 'lucide-react'
 import type { Reward } from '../lib/campaign'
 import { useGame } from '../context/GameContext'
 import { capsuleThemes, gameAssets, getCapsuleTheme } from '../lib/gameAssets'
+import AppHeader from '../components/AppHeader'
 
 type GamePhase = 'intro' | 'charging' | 'drawing' | 'capsuleDropped' | 'opening' | 'completed' | 'error'
 
@@ -225,16 +226,18 @@ export default function GamePage() {
     )
   }
 
+  const handleBack = () => {
+    if (phase !== 'intro' && phase !== 'completed' && phase !== 'error') {
+      const confirmed = window.confirm('ออกจากเกมตอนนี้จะยกเลิกการหมุน ยืนยันออก?')
+      if (!confirmed) return
+    }
+    navigate('/')
+  }
+
   return (
     <div className="min-h-[100dvh] overflow-hidden bg-parchment px-5 pb-24 pt-4 text-ink-dark">
       <div className="mx-auto max-w-[460px]">
-        <button
-          onClick={() => navigate('/')}
-          className="mb-3 flex items-center gap-2 text-sm font-semibold text-pharmacy-green"
-        >
-          <ChevronLeft size={18} />
-          กลับ
-        </button>
+        <AppHeader showBack onBack={handleBack} />
 
         <section className="relative overflow-hidden rounded-[8px] bg-deep-green p-5 text-white shadow-elevated">
           <img

@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { CheckCircle2, ChevronLeft, ShieldCheck, TicketX } from 'lucide-react'
+import { CheckCircle2, ShieldCheck, TicketX } from 'lucide-react'
+import BackButton from '../components/BackButton'
 import { formatThaiDate, pharmacyProfile } from '../lib/campaign'
 import { useGame } from '../context/GameContext'
 
@@ -35,10 +36,12 @@ export default function RedeemPage() {
   return (
     <div className="min-h-[100dvh] bg-deep-green px-5 py-5 text-white">
       <div className="mx-auto max-w-[460px]">
-        <button onClick={() => navigate('/wallet')} className="mb-4 flex items-center gap-2 text-sm font-semibold text-white/80">
-          <ChevronLeft size={18} />
-          กลับ Wallet
-        </button>
+        <BackButton
+          onClick={() => navigate('/wallet')}
+          label="กลับ Wallet"
+          tone="muted"
+          className="mb-4"
+        />
 
         <section className="rounded-[8px] bg-white p-5 text-ink-dark shadow-elevated">
           <div className="flex items-start justify-between gap-4">
