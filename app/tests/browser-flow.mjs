@@ -53,7 +53,7 @@ try {
   await page.getByPlaceholder('0812345678').fill(phone)
   await page.getByRole('button', { name: /ยืนยันและเล่นเกมส์|ยืนยันและรับสิทธิ์/ }).click()
 
-  await expectVisibleText('ตู้กาชาปองสุขภาพ CNY')
+  await expectVisibleText('เตรียมหมุนตู้')
   await page.getByRole('button', { name: /เริ่มหมุนตู้/ }).click()
 
   const chargeButton = page.getByRole('button', { name: /แตะ .*เติมพลัง/ })
