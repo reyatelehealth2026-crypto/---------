@@ -8,6 +8,7 @@ import { gameAssets, getCapsuleTheme } from '../lib/gameAssets'
 import { useGame } from '../context/GameContext'
 import { openLineOfficialAccount } from '../lib/lineLiff'
 import AppHeader from '../components/AppHeader'
+import ErrorBanner from '../components/ErrorBanner'
 
 export default function RewardPage() {
   const navigate = useNavigate()
@@ -115,11 +116,7 @@ export default function RewardPage() {
               </div>
             </div>
 
-            {state.error && (
-              <div className="mt-4 rounded-[8px] bg-alert-coral/15 px-4 py-3 text-sm leading-6 text-white">
-                {state.error}
-              </div>
-            )}
+            <ErrorBanner message={state.error} className="mt-4" />
 
             <div className="mt-4 grid gap-3">
               <button

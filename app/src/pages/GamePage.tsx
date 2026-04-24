@@ -7,6 +7,7 @@ import type { Reward } from '../lib/campaign'
 import { useGame } from '../context/GameContext'
 import { capsuleThemes, gameAssets, getCapsuleTheme } from '../lib/gameAssets'
 import AppHeader from '../components/AppHeader'
+import ErrorBanner from '../components/ErrorBanner'
 
 type GamePhase = 'intro' | 'charging' | 'drawing' | 'capsuleDropped' | 'opening' | 'completed' | 'error'
 
@@ -21,11 +22,10 @@ const preloadImage = (src: string) => {
 
 export default function GamePage() {
   const navigate = useNavigate()
-  const { state, hasPlayed, drawMainReward } = useGame()
+  const { state, hasPlayed, drawMainReward, clearError } = useGame()
   const [phase, setPhase] = useState<GamePhase>('intro')
   const [charge, setCharge] = useState(0)
   const [drawnReward, setDrawnReward] = useState<Reward | null>(null)
-  const [localError, setLocalError] = useState<string | null>(null)
   const [isDrawLocked, setIsDrawLocked] = useState(false)
   const [isReplayRound, setIsReplayRound] = useState(false)
   const drawLock = useRef(false)
@@ -146,7 +146,7 @@ export default function GamePage() {
     setDrawnReward(replayReward)
     setIsReplayRound(Boolean(replayReward))
     setCharge(12)
-    setLocalError(null)
+    clearError()
     setPhase('charging')
   }
 
@@ -154,7 +154,7 @@ export default function GamePage() {
     if (!canSpin || drawLock.current) return
     drawLock.current = true
     setIsDrawLocked(true)
-    setLocalError(null)
+    clearError()
     setPhase('drawing')
     navigator.vibrate?.([40, 30, 70])
 
@@ -170,10 +170,9 @@ export default function GamePage() {
       setDrawnReward(nextReward)
       preloadImage(getCapsuleTheme(nextReward.tier).image)
       schedule(() => setPhase('capsuleDropped'), 850)
-    } catch (error) {
+    } catch {
       drawLock.current = false
       setIsDrawLocked(false)
-      setLocalError(error instanceof Error ? error.message : 'ไม่สามารถสุ่มคูปองได้')
       setPhase('error')
     }
   }
@@ -192,7 +191,7 @@ export default function GamePage() {
   const retrySpin = () => {
     drawLock.current = false
     setIsDrawLocked(false)
-    setLocalError(null)
+    clearError()
     setPhase('charging')
     setCharge(100)
   }
@@ -203,7 +202,7 @@ export default function GamePage() {
     setIsDrawLocked(false)
     setIsReplayRound(Boolean(replayReward))
     setDrawnReward(replayReward)
-    setLocalError(null)
+    clearError()
     setCharge(0)
     setPhase('intro')
   }
@@ -603,11 +602,11 @@ export default function GamePage() {
           )}
 
           {phase === 'error' && (
-            <div className="mt-5 rounded-[8px] border border-alert-coral/30 bg-alert-coral/10 p-4 text-center">
-              <p className="text-sm font-semibold text-alert-coral">{localError ?? state.error ?? 'ไม่สามารถหมุนตู้ได้'}</p>
+            <div className="mt-5 space-y-3">
+              <ErrorBanner message={state.error ?? 'ไม่สามารถหมุนตู้ได้'} />
               <button
                 onClick={retrySpin}
-                className="mt-3 w-full rounded-[8px] bg-pharmacy-green px-4 py-3 font-semibold text-white"
+                className="w-full rounded-[8px] bg-pharmacy-green px-4 py-3 font-semibold text-white"
               >
                 ลองหมุนอีกครั้ง
               </button>

@@ -6,6 +6,7 @@ import { isValidThaiMobile, normalizeThaiPhone, pharmacyProfile } from '../lib/c
 import { useGame } from '../context/GameContext'
 import { getLiffEntryUrl } from '../lib/lineLiff'
 import AppHeader from '../components/AppHeader'
+import ErrorBanner from '../components/ErrorBanner'
 
 const facebookUrl = 'https://www.facebook.com/CLINICYATH/'
 const lineAddFriendUrl = 'https://page.line.me/clinicya'
@@ -94,11 +95,7 @@ export default function RegisterPage() {
             </section>
 
             <form onSubmit={submit} className="mt-4 space-y-4 rounded-[8px] bg-white p-5 shadow-sm">
-              {state.error && (
-                <div className="rounded-[8px] border border-pharmacy-green/20 bg-sky-wash px-4 py-3 text-sm text-ink-medium">
-                  {state.error}
-                </div>
-              )}
+              <ErrorBanner message={state.error} tone="soft" />
 
               {state.customer && (
                 <div className="rounded-[8px] border border-pharmacy-green/20 bg-sky-wash px-4 py-3 text-sm leading-6 text-ink-medium">
@@ -145,11 +142,7 @@ export default function RegisterPage() {
                 </span>
               </label>
 
-              {error && (
-                <div className="rounded-[8px] border border-alert-coral/30 bg-alert-coral/10 px-4 py-3 text-sm text-alert-coral">
-                  {error}
-                </div>
-              )}
+              <ErrorBanner message={error} onDismiss={() => setError(null)} />
 
               <button
                 disabled={state.isSubmitting}
