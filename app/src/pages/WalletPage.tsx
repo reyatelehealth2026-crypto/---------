@@ -23,13 +23,8 @@ export default function WalletPage() {
     <div className="min-h-[100dvh] bg-parchment px-5 pb-24 pt-5 text-ink-dark">
       <div className="mx-auto max-w-[460px]">
         <AppHeader showBack backLabel="หน้าแคมเปญ" onBack={() => navigate('/')} showWallet={false} />
-        <section className="relative overflow-hidden rounded-[8px] bg-deep-green p-5 pt-10 text-white shadow-elevated">
-          <img
-            src="/ui-frame-banner.png"
-            alt=""
-            aria-hidden="true"
-            className="pointer-events-none absolute -top-2 left-1/2 z-10 h-16 w-[92%] -translate-x-1/2 object-contain drop-shadow-[0_14px_20px_rgba(212,184,90,0.4)]"
-          />
+        <section className="relative overflow-hidden rounded-[8px] bg-deep-green p-5 text-white shadow-elevated">
+          <div className="absolute inset-x-0 top-0 h-1 bg-gold" />
           <div className="relative z-20 flex items-center justify-between">
             <div>
               <p className="text-sm text-white/75">{state.campaign.name || pharmacyProfile.name}</p>
@@ -111,21 +106,15 @@ export default function WalletPage() {
 
         <section className="mt-5 rounded-[8px] bg-white p-4 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="relative size-16 shrink-0">
-              <img
-                src="/ui-frame-profile.png"
-                alt=""
-                aria-hidden="true"
-                className="absolute inset-0 size-full object-contain drop-shadow-[0_8px_14px_rgba(22,74,56,0.28)]"
-              />
+            <div className="relative grid size-16 shrink-0 place-items-center rounded-full border-2 border-pharmacy-green/25 bg-sky-wash shadow-sm">
               {lineProfile?.pictureUrl ? (
                 <img
                   src={lineProfile.pictureUrl}
                   alt={lineDisplayName}
-                  className="absolute left-1/2 top-1/2 size-10 -translate-x-1/2 -translate-y-1/2 rounded-full object-cover"
+                  className="size-14 rounded-full object-cover"
                 />
               ) : (
-                <span className="absolute inset-0 grid place-items-center text-lg font-display font-semibold text-pharmacy-green">
+                <span className="text-lg font-display font-semibold text-pharmacy-green">
                   {profileInitial}
                 </span>
               )}

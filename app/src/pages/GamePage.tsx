@@ -102,8 +102,6 @@ export default function GamePage() {
         )}
 
         <section className="relative mt-1 overflow-hidden rounded-[8px] border border-white/80 bg-[radial-gradient(circle_at_50%_0%,#FFF8DF_0%,#FFFDF7_34%,#E8F6F3_100%)] p-4 shadow-[0_28px_70px_rgba(22,74,56,0.20)]">
-          <div className="pointer-events-none absolute -left-20 top-12 size-48 rounded-full bg-gold/20 blur-3xl" />
-          <div className="pointer-events-none absolute -right-24 top-40 size-56 rounded-full bg-pharmacy-green/15 blur-3xl" />
           <div className="relative flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-light">CNY GASHAPON</p>
@@ -132,7 +130,7 @@ export default function GamePage() {
               src={gameAssets.backgrounds.pharmacyShop}
               alt=""
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 size-full object-cover"
+              className="hidden"
               initial={{ scale: 1.08, opacity: 0.7 }}
               animate={
                 phase === 'drawing'
@@ -150,7 +148,7 @@ export default function GamePage() {
               src={gameAssets.items.couponGold}
               alt=""
               aria-hidden="true"
-              className="pointer-events-none absolute left-3 top-10 z-20 h-14 object-contain drop-shadow-[0_10px_14px_rgba(212,184,90,0.45)]"
+              className="hidden"
               animate={{ y: [0, -10, 0], rotate: [-8, 8, -8] }}
               transition={{ duration: 3.6, repeat: Infinity, ease: 'easeInOut' }}
             />
@@ -158,7 +156,7 @@ export default function GamePage() {
               src={gameAssets.items.giftBox}
               alt=""
               aria-hidden="true"
-              className="pointer-events-none absolute right-4 top-14 z-20 h-14 object-contain drop-shadow-[0_10px_14px_rgba(230,109,152,0.45)]"
+              className="hidden"
               animate={{ y: [0, -14, 0], rotate: [6, -6, 6] }}
               transition={{ duration: 4.2, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }}
             />
@@ -166,7 +164,7 @@ export default function GamePage() {
               src={gameAssets.items.supplementBottle}
               alt=""
               aria-hidden="true"
-              className="pointer-events-none absolute right-12 top-32 z-20 h-12 object-contain drop-shadow-[0_10px_14px_rgba(46,125,90,0.45)]"
+              className="hidden"
               animate={{ y: [0, -8, 0], rotate: [-4, 4, -4] }}
               transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }}
             />
@@ -203,7 +201,7 @@ export default function GamePage() {
               <div className="pointer-events-none absolute left-20 top-12 z-20 h-48 w-10 -rotate-12 rounded-full bg-white/35 blur-sm" />
             </motion.div>
             <motion.div
-              className="absolute bottom-[84px] right-10 z-20 hidden h-16 w-8 rounded-full border border-gold/70 bg-[linear-gradient(180deg,#F6DC7A,#A7822E)] shadow-[0_10px_18px_rgba(92,74,18,0.26)] min-[390px]:block"
+              className="hidden"
               animate={phase === 'drawing' ? { rotate: [0, 28, -16, 0] } : { rotate: 0 }}
               transition={{ duration: 0.65, repeat: phase === 'drawing' ? Infinity : 0 }}
             />
@@ -214,7 +212,7 @@ export default function GamePage() {
               key={mascotImage}
               src={mascotImage}
               alt="มาสคอต CNY"
-              className="absolute bottom-3 left-2 z-30 h-28 object-contain drop-shadow-[0_10px_18px_rgba(22,74,56,0.26)]"
+              className="hidden"
               initial={{ opacity: 0, y: 14, scale: 0.85 }}
               animate={
                 phase === 'completed'
@@ -319,17 +317,16 @@ export default function GamePage() {
           {phase === 'intro' && (
             <motion.button
               onClick={startGame}
-              className="relative mt-5 flex h-20 w-full items-center justify-center overflow-visible transition active:scale-[0.96]"
+              className="relative mx-auto mt-5 flex h-14 w-full max-w-[320px] items-center justify-center gap-2 overflow-hidden rounded-[8px] border border-gold/45 bg-[linear-gradient(180deg,#3A9C6F,#15543F)] px-5 font-display text-lg font-semibold text-white shadow-[0_18px_34px_rgba(46,125,90,0.30),inset_0_1px_0_rgba(255,255,255,0.24)] transition active:scale-[0.96]"
               whileTap={{ scale: 0.94 }}
-              animate={{ y: [0, -4, 0] }}
-              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+              transition={{ duration: 0.16 }}
             >
               <img
                 src={gameAssets.ui.buttonPlay}
                 alt="เริ่มหมุนตู้"
-                className="h-20 w-auto object-contain drop-shadow-[0_16px_24px_rgba(212,184,90,0.45)]"
+                className="hidden"
               />
-              <span className="pointer-events-none absolute inset-0 flex items-center justify-center gap-2 font-display text-lg font-semibold text-white drop-shadow-[0_2px_0_rgba(22,74,56,0.6)]">
+              <span className="relative flex items-center justify-center gap-2 drop-shadow-[0_2px_0_rgba(22,74,56,0.45)]">
                 <Sparkles size={20} />
                 เริ่มหมุนตู้
               </span>
@@ -385,7 +382,7 @@ export default function GamePage() {
 
           {phase === 'completed' && reward && (
             <div className="mt-5 rounded-[8px] border border-gold/40 bg-cream-card p-4 text-center">
-              <img src={gameAssets.rewardTicket} alt="คูปองรางวัล CNY" className="mx-auto h-28 object-contain" />
+              <img src={gameAssets.rewardTicket} alt="คูปองรางวัล CNY" className="hidden" />
               <p className="mt-2 text-xs font-semibold text-pharmacy-green">
                 {isReplayRound ? 'คูปองเดิมจากครั้งแรก' : 'รางวัลของคุณ'}
               </p>
@@ -399,17 +396,16 @@ export default function GamePage() {
               <div className="mt-4 grid gap-2">
                 <motion.button
                   onClick={() => navigate('/reward')}
-                  className="relative flex h-20 w-full items-center justify-center overflow-visible transition active:scale-[0.96]"
+                  className="relative flex min-h-14 w-full items-center justify-center gap-2 overflow-hidden rounded-[8px] border border-gold/45 bg-[linear-gradient(180deg,#3A9C6F,#15543F)] px-4 py-3 font-display text-base font-semibold text-white shadow-[0_18px_34px_rgba(46,125,90,0.28),inset_0_1px_0_rgba(255,255,255,0.24)] transition active:scale-[0.96]"
                   whileTap={{ scale: 0.94 }}
-                  animate={{ y: [0, -3, 0] }}
-                  transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                  transition={{ duration: 0.16 }}
                 >
                   <img
                     src={gameAssets.ui.buttonClaim}
                     alt="ดูคูปอง"
-                    className="h-20 w-auto object-contain drop-shadow-[0_16px_24px_rgba(212,184,90,0.45)]"
+                    className="hidden"
                   />
-                  <span className="pointer-events-none absolute inset-0 flex items-center justify-center gap-2 font-display text-base font-semibold text-white drop-shadow-[0_2px_0_rgba(22,74,56,0.6)]">
+                  <span className="relative flex items-center justify-center gap-2 text-center leading-snug drop-shadow-[0_2px_0_rgba(22,74,56,0.45)]">
                     <TicketCheck size={18} />
                     {isReplayRound ? 'ดูคูปองเดิม' : 'ดูคูปองและปลดล็อก LINE'}
                   </span>

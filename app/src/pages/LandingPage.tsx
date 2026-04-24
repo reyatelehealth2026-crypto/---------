@@ -114,17 +114,12 @@ export default function LandingPage() {
             {canStartCampaign ? (
               <motion.button
                 onClick={() => navigate(`${startPath}${query ? `?${query}` : ''}`)}
-                className="relative flex h-20 w-full items-center justify-center overflow-visible transition active:scale-[0.96]"
+                className="relative mx-auto flex h-14 w-full max-w-[320px] items-center justify-center gap-2 overflow-hidden rounded-[8px] border border-gold/45 bg-[linear-gradient(180deg,#3A9C6F,#15543F)] px-5 font-display text-lg font-semibold text-white shadow-[0_18px_34px_rgba(46,125,90,0.30),inset_0_1px_0_rgba(255,255,255,0.24)] transition active:scale-[0.96]"
                 whileTap={{ scale: 0.94 }}
-                animate={{ y: [0, -4, 0] }}
-                transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                transition={{ duration: 0.16 }}
               >
-                <img
-                  src="/ui-button-play.png"
-                  alt={startLabel}
-                  className="h-20 w-auto object-contain drop-shadow-[0_16px_24px_rgba(212,184,90,0.45)]"
-                />
-                <span className="pointer-events-none absolute inset-0 flex items-center justify-center gap-2 font-display text-lg font-semibold text-white drop-shadow-[0_2px_0_rgba(22,74,56,0.6)]">
+                <span className="absolute inset-x-6 top-0 h-px bg-gold/70" />
+                <span className="relative flex items-center justify-center gap-2 drop-shadow-[0_2px_0_rgba(22,74,56,0.45)]">
                   {startLabel}
                   <Play size={18} fill="currentColor" />
                 </span>
