@@ -27,7 +27,6 @@ export default function GamePage() {
     playAgain,
   } = useGameMachine()
 
-  const customerName = state.customer?.name ?? 'ลูกค้าคนพิเศษ'
   const capsuleTheme = getCapsuleTheme(reward?.tier)
   const progressLabel = charge >= 100 ? 'พลังพร้อมหมุน' : `เติมพลัง ${Math.round(charge)}%`
   const meterLabel = phase === 'intro' ? 'กดเริ่มแล้วเติมพลังเครื่อง' : progressLabel
@@ -96,47 +95,13 @@ export default function GamePage() {
       <div className="mx-auto max-w-[460px]">
         <AppHeader showBack onBack={handleBack} />
 
-        <section className="relative overflow-hidden rounded-[8px] bg-deep-green p-5 text-white shadow-elevated">
-          <img
-            src={gameAssets.ui.frameBanner}
-            alt=""
-            aria-hidden="true"
-            className="pointer-events-none absolute -top-2 left-1/2 z-10 h-16 w-[92%] -translate-x-1/2 object-contain drop-shadow-[0_14px_20px_rgba(212,184,90,0.4)]"
-          />
-          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/20 to-transparent" />
-          <div className="relative z-20 flex items-start justify-between gap-3 pt-10">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <img
-                  src={gameAssets.ui.frameProfile}
-                  alt=""
-                  aria-hidden="true"
-                  className="size-14 object-contain drop-shadow-[0_8px_14px_rgba(0,0,0,0.24)]"
-                />
-                <span className="absolute inset-0 grid place-items-center text-base font-display font-semibold text-gold">
-                  {(customerName || 'C').charAt(0).toUpperCase()}
-                </span>
-              </div>
-              <div>
-                <p className="text-sm text-white/75">ถึงคิวของ {customerName}</p>
-                <h1 className="mt-1 font-display text-2xl font-semibold leading-tight">ตู้กาชาปองสุขภาพ CNY</h1>
-              </div>
-            </div>
-            <div className="rounded-full bg-white/12 px-3 py-1 text-xs font-semibold text-gold">
-              {hasPlayed ? 'ทดลองเล่นซ้ำได้' : '1 สิทธิ์ / LINE'}
-            </div>
+        {hasPlayed && (
+          <div className="mb-3 rounded-[8px] bg-gold/15 px-3 py-2 text-xs leading-5 text-ink-medium">
+            เล่นซ้ำได้ไม่จำกัดเพื่อทดลองเกม แต่คูปองจะรับได้เฉพาะครั้งแรก
           </div>
-          <p className="relative z-20 mt-3 text-sm leading-6 text-white/80">
-            แตะหรือเขย่าเครื่องเพื่อเติมพลัง แล้วหมุนรับแคปซูลคูปองจาก CNY HEALTHCARE
-          </p>
-          {hasPlayed && (
-            <p className="relative z-20 mt-3 rounded-[8px] bg-white/12 px-3 py-2 text-xs leading-5 text-white/80">
-              เล่นซ้ำได้ไม่จำกัดเพื่อทดลองเกม แต่คูปองจะรับได้เฉพาะครั้งแรกเท่านั้น
-            </p>
-          )}
-        </section>
+        )}
 
-        <section className="relative mt-4 overflow-hidden rounded-[8px] border border-white/80 bg-[radial-gradient(circle_at_50%_0%,#FFF8DF_0%,#FFFDF7_34%,#E8F6F3_100%)] p-4 shadow-[0_28px_70px_rgba(22,74,56,0.20)]">
+        <section className="relative mt-1 overflow-hidden rounded-[8px] border border-white/80 bg-[radial-gradient(circle_at_50%_0%,#FFF8DF_0%,#FFFDF7_34%,#E8F6F3_100%)] p-4 shadow-[0_28px_70px_rgba(22,74,56,0.20)]">
           <div className="pointer-events-none absolute -left-20 top-12 size-48 rounded-full bg-gold/20 blur-3xl" />
           <div className="pointer-events-none absolute -right-24 top-40 size-56 rounded-full bg-pharmacy-green/15 blur-3xl" />
           <div className="relative flex items-center justify-between gap-3">

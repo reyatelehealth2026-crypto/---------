@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { HeartPulse, Phone, ShieldCheck } from 'lucide-react'
-import { isValidThaiMobile, normalizeThaiPhone, pharmacyProfile } from '../lib/campaign'
+import { isValidThaiMobile, normalizeThaiPhone } from '../lib/campaign'
 import { useGame } from '../context/GameContext'
 import { getLiffEntryUrl } from '../lib/lineLiff'
 import AppHeader from '../components/AppHeader'
@@ -84,15 +84,12 @@ export default function RegisterPage() {
           </div>
         ) : (
           <>
-            <section className="rounded-[8px] bg-deep-green p-5 text-white shadow-elevated">
-              <p className="text-sm text-white/75">{state.campaign.name || pharmacyProfile.name}</p>
-              <h1 className="mt-2 font-display text-3xl font-semibold leading-tight">
-                ลูกค้าใหม่ แอด LINE รับส่วนลดสูงสุด 600 บาท
-              </h1>
-              <p className="mt-2 text-sm leading-6 text-white/80">
-                สมัครสมาชิกกับ CNY HEALTHCARE เพื่อรับดีลพิเศษสำหรับธุรกิจสุขภาพ พร้อมอัปเดตสินค้า อาหารเสริม และอุปกรณ์การแพทย์ครบวงจรผ่าน LINE @clinicya
-              </p>
-            </section>
+            <h1 className="mt-2 font-display text-3xl font-semibold leading-tight text-ink-dark">
+              ลูกค้าใหม่ แอด LINE รับส่วนลดสูงสุด 600 บาท
+            </h1>
+            <p className="mt-2 text-sm leading-6 text-ink-medium">
+              กรอกชื่อและเบอร์เพื่อรับสิทธิ์และเก็บคูปองไว้ใน Wallet
+            </p>
 
             <form onSubmit={submit} className="mt-4 space-y-4 rounded-[8px] bg-white p-5 shadow-sm">
               <ErrorBanner message={state.error} tone="soft" />
