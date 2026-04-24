@@ -56,6 +56,11 @@ export default function RewardPage() {
           style={{ background: `linear-gradient(180deg, ${capsuleTheme.soft} 0%, #FFFDF7 100%)` }}
         >
           <img src={gameAssets.confetti} alt="" className="pointer-events-none absolute inset-0 size-full object-cover opacity-50" />
+          <img
+            src={gameAssets.mascot.celebrate}
+            alt="มาสคอต CNY ฉลองรางวัล"
+            className="pointer-events-none absolute -left-4 bottom-2 z-10 h-32 object-contain drop-shadow-[0_12px_18px_rgba(22,74,56,0.24)]"
+          />
           <div className="relative mx-auto grid h-48 place-items-center">
             <img src={gameAssets.openCapsule} alt="เปิดแคปซูลคูปอง CNY" className="absolute h-44 object-contain" />
             <img src={gameAssets.rewardTicket} alt="คูปองรางวัล CNY" className="relative mt-20 h-24 object-contain drop-shadow-xl" />
@@ -119,8 +124,14 @@ export default function RewardPage() {
             </p>
           </section>
         ) : (
-          <section className="mt-4 rounded-[8px] bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between gap-3">
+          <section className="relative mt-4 overflow-hidden rounded-[8px] bg-white p-5 shadow-sm">
+            <img
+              src={gameAssets.backgrounds.workspace}
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 size-full object-cover opacity-10"
+            />
+            <div className="relative flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-light">Redeem code</p>
                 <p className="mt-1 font-mono text-2xl font-semibold text-pharmacy-green">{reward.code}</p>

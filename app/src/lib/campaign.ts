@@ -74,7 +74,7 @@ export const rewardTemplates: RewardTemplate[] = [
     description: 'คูปองพิเศษสำหรับลูกค้าใหม่ที่แอด LINE @clinicya ใช้กับยอดซื้อสินค้าสุขภาพที่ร่วมรายการครบ 3,000 บาท',
     amount: 600,
     weight: 5,
-    image: '/reward-ticket-100.png',
+    image: '/item-coupon-gold.png',
     terms: safePharmacyTerms,
   },
   {
@@ -84,7 +84,7 @@ export const rewardTemplates: RewardTemplate[] = [
     description: 'ใช้เป็นส่วนลดสำหรับสินค้าสุขภาพและบริการที่ร่วมรายการ เมื่อมียอดใช้จ่ายครบ 1,500 บาท',
     amount: 300,
     weight: 10,
-    image: '/capsule-purple.png',
+    image: '/item-coupon-gold.png',
     terms: safePharmacyTerms,
   },
   {
@@ -94,7 +94,7 @@ export const rewardTemplates: RewardTemplate[] = [
     description: 'สำหรับยอดซื้อสินค้าสุขภาพที่ร่วมรายการครบ 799 บาท',
     amount: 100,
     weight: 25,
-    image: '/reward-ticket-100.png',
+    image: '/item-supplement-bottle.png',
     terms: safePharmacyTerms,
   },
   {
@@ -104,7 +104,7 @@ export const rewardTemplates: RewardTemplate[] = [
     description: 'ใช้เป็นส่วนลดทันทีสำหรับสินค้าและบริการสุขภาพที่ร่วมรายการ',
     amount: 50,
     weight: 35,
-    image: '/reward-ticket-20.png',
+    image: '/item-coupon-gold.png',
     terms: safePharmacyTerms,
   },
   {
@@ -114,7 +114,7 @@ export const rewardTemplates: RewardTemplate[] = [
     description: 'รับของสมนาคุณที่ CNY HEALTHCARE จัดไว้ในช่วงแคมเปญ',
     amount: 25,
     weight: 15,
-    image: '/capsule-pink.png',
+    image: '/item-gift-box.png',
     terms: safePharmacyTerms,
   },
   {
@@ -124,7 +124,7 @@ export const rewardTemplates: RewardTemplate[] = [
     description: 'รับบริการประเมินสุขภาพเบื้องต้นหรือคำแนะนำจากทีมดูแลสุขภาพ',
     amount: 0,
     weight: 10,
-    image: '/capsule-white.png',
+    image: '/item-supplement-bottle.png',
     terms:
       'ใช้บริการได้ตามเวลาทำการของ CNY HEALTHCARE เป็นบริการประเมินเบื้องต้น ไม่ใช่การวินิจฉัยโรค และไม่สามารถแลกเป็นเงินสด',
   },

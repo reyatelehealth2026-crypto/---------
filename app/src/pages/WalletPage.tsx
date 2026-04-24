@@ -47,7 +47,7 @@ export default function WalletPage() {
 
         {state.rewards.length === 0 ? (
           <section className="mt-5 rounded-[8px] bg-white p-5 text-center shadow-sm">
-            <img src="/wallet-empty.png" alt="ยังไม่มีคูปอง" className="mx-auto h-40 object-contain" />
+            <img src="/mascot-idle.png" alt="ยังไม่มีคูปอง" className="mx-auto h-44 object-contain drop-shadow-[0_16px_22px_rgba(22,74,56,0.22)]" />
             <h2 className="mt-3 font-display text-2xl font-semibold">ยังไม่มีคูปอง</h2>
             <p className="mt-2 text-sm leading-6 text-ink-medium">เริ่มรับสิทธิ์จากแคมเปญ CNY HEALTHCARE เพื่อเก็บคูปองแรกของคุณ</p>
             <button

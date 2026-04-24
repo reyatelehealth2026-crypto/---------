@@ -164,6 +164,13 @@ export default function LandingPage() {
               animate={{ y: [0, -7, 0], rotate: [-0.8, 0.8, -0.8] }}
               transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
             />
+            <motion.img
+              src="/mascot-happy.png"
+              alt="มาสคอต CNY ทักทาย"
+              className="absolute -right-4 bottom-0 z-20 h-28 object-contain drop-shadow-[0_12px_18px_rgba(22,74,56,0.24)]"
+              animate={{ y: [0, -6, 0], rotate: [-3, 3, -3] }}
+              transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
+            />
             <div className="absolute bottom-2 left-1/2 h-4 w-52 -translate-x-1/2 rounded-full bg-ink-dark/10 blur-md" />
           </motion.div>
 

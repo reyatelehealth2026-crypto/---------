@@ -64,9 +64,10 @@ module.exports = {
         "capsule-purple": "#8E6DCA",
       },
       fontFamily: {
-        display: ["Mitr", "Noto Sans Thai", "sans-serif"],
-        sarabun: ["Noto Sans Thai", "Sarabun", "sans-serif"],
-        playfair: ["Mitr", "Noto Sans Thai", "sans-serif"],
+        sans: ["Mitr", "sans-serif"],
+        display: ["Mitr", "sans-serif"],
+        sarabun: ["Mitr", "sans-serif"],
+        playfair: ["Mitr", "sans-serif"],
         mono: ["DM Mono", "ui-monospace", "monospace"],
       },
       borderRadius: {

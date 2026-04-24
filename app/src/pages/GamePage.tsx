@@ -39,6 +39,20 @@ export default function GamePage() {
   const meterLabel = phase === 'intro' ? 'กดเริ่มแล้วเติมพลังเครื่อง' : progressLabel
   const canSpin = phase === 'charging' && charge >= 100 && !state.isSubmitting && !isDrawLocked
 
+  const mascotImage = useMemo(() => {
+    switch (phase) {
+      case 'drawing':
+      case 'opening':
+        return gameAssets.mascot.surprised
+      case 'capsuleDropped':
+        return gameAssets.mascot.happy
+      case 'completed':
+        return gameAssets.mascot.celebrate
+      default:
+        return gameAssets.mascot.idle
+    }
+  }, [phase])
+
   const stageText = useMemo(() => {
     switch (phase) {
       case 'intro':
@@ -85,6 +99,8 @@ export default function GamePage() {
   useEffect(() => {
     preloadImage(gameAssets.machine)
     preloadImage(gameAssets.idleCapsules)
+    preloadImage(gameAssets.backgrounds.pharmacyShop)
+    Object.values(gameAssets.mascot).forEach(preloadImage)
   }, [])
 
   useEffect(() => {
@@ -268,6 +284,13 @@ export default function GamePage() {
             className="relative mx-auto mt-4 h-[360px] overflow-hidden rounded-[8px] border border-white/80 bg-[radial-gradient(circle_at_50%_18%,rgba(255,255,255,0.98)_0%,rgba(232,246,243,0.94)_42%,rgba(22,74,56,0.13)_100%)] shadow-[inset_0_2px_0_rgba(255,255,255,0.95),inset_0_-18px_36px_rgba(22,74,56,0.10)]"
             style={{ perspective: 900 }}
           >
+            <img
+              src={gameAssets.backgrounds.pharmacyShop}
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 size-full object-cover opacity-55"
+            />
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(255,253,247,0.65)_0%,rgba(232,246,243,0.55)_42%,rgba(22,74,56,0.25)_100%)]" />
             <div className="pointer-events-none absolute inset-x-8 top-5 h-36 rounded-full bg-white/45 blur-2xl" />
             <div className="pointer-events-none absolute bottom-0 left-1/2 h-28 w-[112%] -translate-x-1/2 rounded-t-[50%] bg-[linear-gradient(180deg,rgba(46,125,90,0.16),rgba(22,74,56,0.28))]" />
             <div className="pointer-events-none absolute bottom-8 left-1/2 h-12 w-72 -translate-x-1/2 rounded-full bg-ink-dark/16 blur-xl" />
@@ -308,6 +331,22 @@ export default function GamePage() {
             />
             <div className="absolute bottom-6 left-1/2 z-10 h-12 w-44 -translate-x-1/2 rounded-[8px] border border-white/45 bg-deep-green shadow-[0_14px_26px_rgba(22,74,56,0.24)]" />
             <div className="absolute bottom-14 left-1/2 z-20 h-4 w-28 -translate-x-1/2 rounded-full bg-gold shadow-[inset_0_2px_0_rgba(255,255,255,0.55)]" />
+
+            <motion.img
+              key={mascotImage}
+              src={mascotImage}
+              alt="มาสคอต CNY"
+              className="absolute bottom-3 left-2 z-30 h-28 object-contain drop-shadow-[0_10px_18px_rgba(22,74,56,0.26)]"
+              initial={{ opacity: 0, y: 14, scale: 0.85 }}
+              animate={
+                phase === 'completed'
+                  ? { opacity: 1, y: [0, -8, 0], scale: [1, 1.05, 1], rotate: [-4, 4, -4] }
+                  : phase === 'drawing'
+                    ? { opacity: 1, y: [0, -3, 0], rotate: [-3, 3, -3], scale: 1 }
+                    : { opacity: 1, y: [0, -4, 0], scale: 1, rotate: 0 }
+              }
+              transition={{ duration: phase === 'drawing' ? 0.45 : 2.4, repeat: Infinity, repeatType: 'reverse' }}
+            />
 
             <AnimatePresence>
               {phase === 'intro' && (
