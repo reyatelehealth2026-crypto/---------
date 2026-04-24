@@ -1,0 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Mitr:wght@400;500;600&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 33% 96%;
+    --foreground: 30 22% 14%;
+    --card: 36 60% 98%;
+    --card-foreground: 30 22% 14%;
+    --popover: 40 33% 96%;
+    --popover-foreground: 30 22% 14%;
+    --primary: 153 47% 33%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 33% 96%;
+    --secondary-foreground: 153 47% 33%;
+    --muted: 36 25% 92%;
+    --muted-foreground: 30 12% 48%;
+    --accent: 43 47% 54%;
+    --accent-foreground: 30 22% 14%;
+    --destructive: 6 65% 62%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 36 24% 78%;
+    --input: 36 24% 78%;
+    --ring: 153 47% 33%;
+    --radius: 0.75rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-parchment font-sarabun text-ink-dark antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #D4C9B8;
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #8B7E6E;
+  }
+}
