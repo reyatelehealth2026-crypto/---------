@@ -1012,4 +1012,13 @@ export const adminSummary = async () => {
   }
 }
 
+export const pingDatabase = async () => {
+  if (usePostgres) {
+    const rows = await sql`SELECT 1 AS ok`
+    return rows?.[0]?.ok === 1
+  }
+  const row = sqliteDb.prepare('SELECT 1 AS ok').get()
+  return row?.ok === 1
+}
+
 export { parseJson, usePostgres }

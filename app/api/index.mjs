@@ -5,6 +5,7 @@ import {
   getWallet,
   getWalletByLineAccessToken,
   issueReward,
+  pingDatabase,
   recordEvent,
   redeemReward,
   registerCustomer,
@@ -31,7 +32,15 @@ export default async function handler(req, res) {
       }
     }
 
-    if (route === '/health') return sendJson(res, 200, { ok: true })
+    if (route === '/health') {
+      let database = 'ok'
+      try {
+        await pingDatabase()
+      } catch {
+        database = 'error'
+      }
+      return sendJson(res, 200, { ok: true, database })
+    }
 
     if (route === '/bootstrap') {
       if (!ensureMethod(req, res, 'POST')) return
