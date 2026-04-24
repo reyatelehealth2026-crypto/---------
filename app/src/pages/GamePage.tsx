@@ -22,7 +22,7 @@ const preloadImage = (src: string) => {
 
 export default function GamePage() {
   const navigate = useNavigate()
-  const { state, hasPlayed, drawMainReward, clearError } = useGame()
+  const { state, hasPlayed, existingMainReward, drawMainReward, clearError } = useGame()
   const [phase, setPhase] = useState<GamePhase>('intro')
   const [charge, setCharge] = useState(0)
   const [drawnReward, setDrawnReward] = useState<Reward | null>(null)
@@ -33,7 +33,6 @@ export default function GamePage() {
   const timers = useRef<number[]>([])
 
   const customerName = state.customer?.name ?? 'ลูกค้าคนพิเศษ'
-  const existingMainReward = state.rewards.find((item) => item.type === 'main') ?? null
   const reward = drawnReward ?? state.rewards.find((item) => item.id === state.lastRewardId) ?? existingMainReward
   const capsuleTheme = getCapsuleTheme(reward?.tier)
   const progressLabel = charge >= 100 ? 'พลังพร้อมหมุน' : `เติมพลัง ${Math.round(charge)}%`
@@ -142,9 +141,8 @@ export default function GamePage() {
   const startGame = () => {
     const motionEvent = window.DeviceMotionEvent as MotionPermissionEvent | undefined
     void motionEvent?.requestPermission?.().catch(() => undefined)
-    const replayReward = state.rewards.find((item) => item.type === 'main') ?? null
-    setDrawnReward(replayReward)
-    setIsReplayRound(Boolean(replayReward))
+    setDrawnReward(existingMainReward)
+    setIsReplayRound(Boolean(existingMainReward))
     setCharge(12)
     clearError()
     setPhase('charging')
@@ -197,7 +195,7 @@ export default function GamePage() {
   }
 
   const playAgain = () => {
-    const replayReward = state.rewards.find((item) => item.type === 'main') ?? drawnReward
+    const replayReward = existingMainReward ?? drawnReward
     drawLock.current = false
     setIsDrawLocked(false)
     setIsReplayRound(Boolean(replayReward))
