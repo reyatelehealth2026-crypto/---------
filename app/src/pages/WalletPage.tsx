@@ -21,15 +21,21 @@ export default function WalletPage() {
   return (
     <div className="min-h-[100dvh] bg-parchment px-5 pb-24 pt-5 text-ink-dark">
       <div className="mx-auto max-w-[460px]">
-        <section className="rounded-[8px] bg-deep-green p-5 text-white shadow-elevated">
-          <div className="flex items-center justify-between">
+        <section className="relative overflow-hidden rounded-[8px] bg-deep-green p-5 pt-10 text-white shadow-elevated">
+          <img
+            src="/ui-frame-banner.png"
+            alt=""
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-2 left-1/2 z-10 h-16 w-[92%] -translate-x-1/2 object-contain drop-shadow-[0_14px_20px_rgba(212,184,90,0.4)]"
+          />
+          <div className="relative z-20 flex items-center justify-between">
             <div>
               <p className="text-sm text-white/75">{state.campaign.name || pharmacyProfile.name}</p>
               <h1 className="mt-1 font-display text-3xl font-semibold">คูปองของฉัน</h1>
             </div>
             <Wallet size={38} className="text-gold" />
           </div>
-          <div className="mt-5 grid grid-cols-3 gap-2">
+          <div className="relative z-20 mt-5 grid grid-cols-3 gap-2">
             <div className="rounded-[8px] bg-white/12 p-3">
               <p className="text-2xl font-semibold">{state.rewards.length}</p>
               <p className="text-xs text-white/70">ทั้งหมด</p>
@@ -103,17 +109,25 @@ export default function WalletPage() {
 
         <section className="mt-5 rounded-[8px] bg-white p-4 shadow-sm">
           <div className="flex items-center gap-3">
-            {lineProfile?.pictureUrl ? (
+            <div className="relative size-16 shrink-0">
               <img
-                src={lineProfile.pictureUrl}
-                alt={lineDisplayName}
-                className="size-14 rounded-full border border-paper-line object-cover"
+                src="/ui-frame-profile.png"
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 size-full object-contain drop-shadow-[0_8px_14px_rgba(22,74,56,0.28)]"
               />
-            ) : (
-              <div className="grid size-14 place-items-center rounded-full bg-sky-wash text-xl font-semibold text-pharmacy-green">
-                {profileInitial}
-              </div>
-            )}
+              {lineProfile?.pictureUrl ? (
+                <img
+                  src={lineProfile.pictureUrl}
+                  alt={lineDisplayName}
+                  className="absolute left-1/2 top-1/2 size-10 -translate-x-1/2 -translate-y-1/2 rounded-full object-cover"
+                />
+              ) : (
+                <span className="absolute inset-0 grid place-items-center text-lg font-display font-semibold text-pharmacy-green">
+                  {profileInitial}
+                </span>
+              )}
+            </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold text-pharmacy-green">โปรไฟล์ LINE</p>
               <h2 className="truncate font-display text-2xl font-semibold leading-tight">{lineDisplayName}</h2>

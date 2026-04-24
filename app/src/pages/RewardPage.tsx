@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import confetti from 'canvas-confetti'
+import { motion } from 'framer-motion'
 import { Gift, LockKeyhole, MessageCircle, Share2, Ticket } from 'lucide-react'
 import { formatThaiDate } from '../lib/campaign'
 import { gameAssets, getCapsuleTheme } from '../lib/gameAssets'
@@ -56,10 +57,28 @@ export default function RewardPage() {
           style={{ background: `linear-gradient(180deg, ${capsuleTheme.soft} 0%, #FFFDF7 100%)` }}
         >
           <img src={gameAssets.confetti} alt="" className="pointer-events-none absolute inset-0 size-full object-cover opacity-50" />
-          <img
+          <motion.img
+            src={gameAssets.items.couponGold}
+            alt=""
+            aria-hidden="true"
+            className="pointer-events-none absolute right-6 top-4 z-10 h-14 object-contain drop-shadow-[0_10px_16px_rgba(212,184,90,0.5)]"
+            animate={{ y: [0, -10, 0], rotate: [-10, 10, -10] }}
+            transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <motion.img
+            src={gameAssets.items.giftBox}
+            alt=""
+            aria-hidden="true"
+            className="pointer-events-none absolute left-8 top-6 z-10 h-14 object-contain drop-shadow-[0_10px_16px_rgba(230,109,152,0.5)]"
+            animate={{ y: [0, -8, 0], rotate: [8, -8, 8] }}
+            transition={{ duration: 3.8, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
+          />
+          <motion.img
             src={gameAssets.mascot.celebrate}
             alt="มาสคอต CNY ฉลองรางวัล"
             className="pointer-events-none absolute -left-4 bottom-2 z-10 h-32 object-contain drop-shadow-[0_12px_18px_rgba(22,74,56,0.24)]"
+            animate={{ y: [0, -6, 0], rotate: [-4, 4, -4] }}
+            transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
           />
           <div className="relative mx-auto grid h-48 place-items-center">
             <img src={gameAssets.openCapsule} alt="เปิดแคปซูลคูปอง CNY" className="absolute h-44 object-contain" />

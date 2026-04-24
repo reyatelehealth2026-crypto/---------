@@ -113,13 +113,23 @@ export default function LandingPage() {
             className="mt-5 w-full"
           >
             {canStartCampaign ? (
-              <button
+              <motion.button
                 onClick={() => navigate(`${startPath}${query ? `?${query}` : ''}`)}
-                className="flex h-14 w-full items-center justify-center gap-2 rounded-[8px] bg-pharmacy-green text-lg font-semibold text-white shadow-button transition active:scale-[0.98]"
+                className="relative flex h-20 w-full items-center justify-center overflow-visible transition active:scale-[0.96]"
+                whileTap={{ scale: 0.94 }}
+                animate={{ y: [0, -4, 0] }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
               >
-                {startLabel}
-                <Play size={18} fill="currentColor" />
-              </button>
+                <img
+                  src="/ui-button-play.png"
+                  alt={startLabel}
+                  className="h-20 w-auto object-contain drop-shadow-[0_16px_24px_rgba(212,184,90,0.45)]"
+                />
+                <span className="pointer-events-none absolute inset-0 flex items-center justify-center gap-2 font-display text-lg font-semibold text-white drop-shadow-[0_2px_0_rgba(22,74,56,0.6)]">
+                  {startLabel}
+                  <Play size={18} fill="currentColor" />
+                </span>
+              </motion.button>
             ) : (
               <div className="space-y-3">
                 <div className="rounded-[8px] border border-gold/35 bg-gold/10 px-4 py-3 text-left text-sm leading-6 text-ink-medium">

@@ -237,21 +237,40 @@ export default function GamePage() {
         </button>
 
         <section className="relative overflow-hidden rounded-[8px] bg-deep-green p-5 text-white shadow-elevated">
+          <img
+            src={gameAssets.ui.frameBanner}
+            alt=""
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-2 left-1/2 z-10 h-16 w-[92%] -translate-x-1/2 object-contain drop-shadow-[0_14px_20px_rgba(212,184,90,0.4)]"
+          />
           <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/20 to-transparent" />
-          <div className="relative flex items-start justify-between gap-3">
-            <div>
-              <p className="text-sm text-white/75">ถึงคิวของ {customerName}</p>
-              <h1 className="mt-2 font-display text-3xl font-semibold leading-tight">ตู้กาชาปองสุขภาพ CNY</h1>
+          <div className="relative z-20 flex items-start justify-between gap-3 pt-10">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <img
+                  src={gameAssets.ui.frameProfile}
+                  alt=""
+                  aria-hidden="true"
+                  className="size-14 object-contain drop-shadow-[0_8px_14px_rgba(0,0,0,0.24)]"
+                />
+                <span className="absolute inset-0 grid place-items-center text-base font-display font-semibold text-gold">
+                  {(customerName || 'C').charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div>
+                <p className="text-sm text-white/75">ถึงคิวของ {customerName}</p>
+                <h1 className="mt-1 font-display text-2xl font-semibold leading-tight">ตู้กาชาปองสุขภาพ CNY</h1>
+              </div>
             </div>
             <div className="rounded-full bg-white/12 px-3 py-1 text-xs font-semibold text-gold">
               {hasPlayed ? 'ทดลองเล่นซ้ำได้' : '1 สิทธิ์ / LINE'}
             </div>
           </div>
-          <p className="relative mt-2 text-sm leading-6 text-white/80">
+          <p className="relative z-20 mt-3 text-sm leading-6 text-white/80">
             แตะหรือเขย่าเครื่องเพื่อเติมพลัง แล้วหมุนรับแคปซูลคูปองจาก CNY HEALTHCARE
           </p>
           {hasPlayed && (
-            <p className="relative mt-3 rounded-[8px] bg-white/12 px-3 py-2 text-xs leading-5 text-white/80">
+            <p className="relative z-20 mt-3 rounded-[8px] bg-white/12 px-3 py-2 text-xs leading-5 text-white/80">
               เล่นซ้ำได้ไม่จำกัดเพื่อทดลองเกม แต่คูปองจะรับได้เฉพาะครั้งแรกเท่านั้น
             </p>
           )}
@@ -284,14 +303,48 @@ export default function GamePage() {
             className="relative mx-auto mt-4 h-[360px] overflow-hidden rounded-[8px] border border-white/80 bg-[radial-gradient(circle_at_50%_18%,rgba(255,255,255,0.98)_0%,rgba(232,246,243,0.94)_42%,rgba(22,74,56,0.13)_100%)] shadow-[inset_0_2px_0_rgba(255,255,255,0.95),inset_0_-18px_36px_rgba(22,74,56,0.10)]"
             style={{ perspective: 900 }}
           >
-            <img
+            <motion.img
               src={gameAssets.backgrounds.pharmacyShop}
               alt=""
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 size-full object-cover opacity-55"
+              className="pointer-events-none absolute inset-0 size-full object-cover"
+              initial={{ scale: 1.08, opacity: 0.7 }}
+              animate={
+                phase === 'drawing'
+                  ? { scale: [1.08, 1.12, 1.08], opacity: 0.78 }
+                  : { scale: 1.08, opacity: 0.7 }
+              }
+              transition={{ duration: 1.2, repeat: phase === 'drawing' ? Infinity : 0 }}
             />
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(255,253,247,0.65)_0%,rgba(232,246,243,0.55)_42%,rgba(22,74,56,0.25)_100%)]" />
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_22%,rgba(255,253,247,0.55)_0%,rgba(232,246,243,0.45)_38%,rgba(22,74,56,0.35)_100%)]" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-white/55 to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-deep-green/40 to-transparent" />
             <div className="pointer-events-none absolute inset-x-8 top-5 h-36 rounded-full bg-white/45 blur-2xl" />
+
+            <motion.img
+              src={gameAssets.items.couponGold}
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none absolute left-3 top-10 z-20 h-14 object-contain drop-shadow-[0_10px_14px_rgba(212,184,90,0.45)]"
+              animate={{ y: [0, -10, 0], rotate: [-8, 8, -8] }}
+              transition={{ duration: 3.6, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            <motion.img
+              src={gameAssets.items.giftBox}
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none absolute right-4 top-14 z-20 h-14 object-contain drop-shadow-[0_10px_14px_rgba(230,109,152,0.45)]"
+              animate={{ y: [0, -14, 0], rotate: [6, -6, 6] }}
+              transition={{ duration: 4.2, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }}
+            />
+            <motion.img
+              src={gameAssets.items.supplementBottle}
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none absolute right-12 top-32 z-20 h-12 object-contain drop-shadow-[0_10px_14px_rgba(46,125,90,0.45)]"
+              animate={{ y: [0, -8, 0], rotate: [-4, 4, -4] }}
+              transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }}
+            />
             <div className="pointer-events-none absolute bottom-0 left-1/2 h-28 w-[112%] -translate-x-1/2 rounded-t-[50%] bg-[linear-gradient(180deg,rgba(46,125,90,0.16),rgba(22,74,56,0.28))]" />
             <div className="pointer-events-none absolute bottom-8 left-1/2 h-12 w-72 -translate-x-1/2 rounded-full bg-ink-dark/16 blur-xl" />
             <motion.div
@@ -300,14 +353,14 @@ export default function GamePage() {
               animate={
                 phase === 'drawing'
                   ? {
-                      rotateY: [0, -7, 7, -5, 5, 0],
-                      rotateZ: [0, -1.2, 1.2, -1, 1, 0],
-                      y: [0, -3, 0],
-                      scale: [1, 1.025, 1],
+                      rotateY: [0, -12, 12, -9, 9, 0],
+                      rotateZ: [0, -2, 2, -1.5, 1.5, 0],
+                      y: [0, -5, 0],
+                      scale: [1, 1.04, 1],
                     }
                   : phase === 'charging' && charge > 30
-                    ? { rotateX: [0, 1.4, 0], y: [0, -3, 0] }
-                    : { rotateX: 0, rotateY: 0, rotateZ: 0, y: 0, scale: 1 }
+                    ? { rotateX: [-4, 4, -4], rotateY: [-5, 5, -5], y: [0, -5, 0] }
+                    : { rotateX: -3, rotateY: 0, rotateZ: 0, y: 0, scale: 1 }
               }
               transition={{ duration: phase === 'drawing' ? 0.62 : 1.8, repeat: phase === 'drawing' ? Infinity : 0 }}
             >
@@ -439,15 +492,23 @@ export default function GamePage() {
           )}
 
           {phase === 'intro' && (
-            <button
+            <motion.button
               onClick={startGame}
-              className="group relative mt-5 flex h-16 w-full items-center justify-center gap-2 overflow-hidden rounded-[8px] border border-white/20 bg-[linear-gradient(180deg,#319164,#1F6F4C)] px-4 font-semibold text-white shadow-[0_18px_34px_rgba(46,125,90,0.32),inset_0_1px_0_rgba(255,255,255,0.24)] transition active:scale-[0.98]"
+              className="relative mt-5 flex h-20 w-full items-center justify-center overflow-visible transition active:scale-[0.96]"
+              whileTap={{ scale: 0.94 }}
+              animate={{ y: [0, -4, 0] }}
+              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
             >
-              <span className="absolute inset-x-8 top-0 h-px bg-white/45" />
-              <span className="absolute -left-16 top-0 h-full w-12 skew-x-[-18deg] bg-white/18 transition duration-700 group-hover:translate-x-[520px]" />
-              <Sparkles size={19} />
-              <span>เริ่มหมุนตู้</span>
-            </button>
+              <img
+                src={gameAssets.ui.buttonPlay}
+                alt="เริ่มหมุนตู้"
+                className="h-20 w-auto object-contain drop-shadow-[0_16px_24px_rgba(212,184,90,0.45)]"
+              />
+              <span className="pointer-events-none absolute inset-0 flex items-center justify-center gap-2 font-display text-lg font-semibold text-white drop-shadow-[0_2px_0_rgba(22,74,56,0.6)]">
+                <Sparkles size={20} />
+                เริ่มหมุนตู้
+              </span>
+            </motion.button>
           )}
 
           {phase === 'charging' && (
@@ -511,13 +572,23 @@ export default function GamePage() {
                 </p>
               )}
               <div className="mt-4 grid gap-2">
-                <button
+                <motion.button
                   onClick={() => navigate('/reward')}
-                  className="flex w-full items-center justify-center gap-2 rounded-[8px] bg-pharmacy-green px-4 py-3 font-semibold text-white"
+                  className="relative flex h-20 w-full items-center justify-center overflow-visible transition active:scale-[0.96]"
+                  whileTap={{ scale: 0.94 }}
+                  animate={{ y: [0, -3, 0] }}
+                  transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
                 >
-                  <TicketCheck size={18} />
-                  {isReplayRound ? 'ดูคูปองเดิม' : 'ดูคูปองและปลดล็อก LINE'}
-                </button>
+                  <img
+                    src={gameAssets.ui.buttonClaim}
+                    alt="ดูคูปอง"
+                    className="h-20 w-auto object-contain drop-shadow-[0_16px_24px_rgba(212,184,90,0.45)]"
+                  />
+                  <span className="pointer-events-none absolute inset-0 flex items-center justify-center gap-2 font-display text-base font-semibold text-white drop-shadow-[0_2px_0_rgba(22,74,56,0.6)]">
+                    <TicketCheck size={18} />
+                    {isReplayRound ? 'ดูคูปองเดิม' : 'ดูคูปองและปลดล็อก LINE'}
+                  </span>
+                </motion.button>
                 <button
                   onClick={playAgain}
                   className="rounded-[8px] border border-pharmacy-green px-4 py-3 text-sm font-semibold text-pharmacy-green"
