@@ -3,6 +3,7 @@ import confetti from 'canvas-confetti'
 import type { Reward } from '../lib/campaign'
 import { useGame } from '../context/GameContext'
 import { capsuleThemes, gameAssets, getCapsuleTheme } from '../lib/gameAssets'
+import { playGameSound, unlockGameAudio } from '../lib/gameAudio'
 
 export type GamePhase =
   | 'intro'
@@ -49,6 +50,7 @@ export function useGameMachine(): GameMachine {
   const drawLock = useRef(false)
   const pressInterval = useRef<number | null>(null)
   const timers = useRef<number[]>([])
+  const readySoundPlayed = useRef(false)
 
   const reward =
     drawnReward ??
@@ -58,7 +60,13 @@ export function useGameMachine(): GameMachine {
   const canSpin = phase === 'charging' && charge >= 100 && !state.isSubmitting && !isDrawLocked
 
   const addCharge = useCallback((amount = 9) => {
-    setCharge((value) => Math.min(100, value + amount))
+    setCharge((value) => {
+      const nextValue = Math.min(100, value + amount)
+      if (nextValue > value && nextValue < 100) {
+        playGameSound('charge')
+      }
+      return nextValue
+    })
     navigator.vibrate?.(24)
   }, [])
 
@@ -83,8 +91,15 @@ export function useGameMachine(): GameMachine {
 
   useEffect(() => {
     preloadImage(gameAssets.machine)
+    preloadImage(gameAssets.machineEmpty)
     preloadImage(gameAssets.idleCapsules)
-    preloadImage(gameAssets.backgrounds.pharmacyShop)
+    preloadImage(gameAssets.backgrounds.stage)
+    preloadImage(gameAssets.backgrounds.hills)
+    preloadImage(gameAssets.ui.woodFrame)
+    preloadImage(gameAssets.props.fence)
+    preloadImage(gameAssets.props.treeBush)
+    preloadImage(gameAssets.props.paintPalette)
+    preloadImage(gameAssets.loadingEgg)
     Object.values(gameAssets.mascot).forEach(preloadImage)
   }, [])
 
@@ -93,7 +108,22 @@ export function useGameMachine(): GameMachine {
       Object.values(capsuleThemes).forEach((theme) => preloadImage(theme.image))
       preloadImage(gameAssets.openCapsule)
       preloadImage(gameAssets.rewardTicket)
+      preloadImage(gameAssets.prizeGlow)
+      preloadImage(gameAssets.rewards.cardCommon)
+      preloadImage(gameAssets.rewards.cardRare)
+      preloadImage(gameAssets.rewards.giftBox)
+      preloadImage(gameAssets.confetti)
     }
+  }, [charge, phase])
+
+  useEffect(() => {
+    if (phase !== 'charging' || charge < 100) {
+      readySoundPlayed.current = false
+      return
+    }
+    if (readySoundPlayed.current) return
+    readySoundPlayed.current = true
+    playGameSound('ready')
   }, [charge, phase])
 
   useEffect(() => {
@@ -127,11 +157,14 @@ export function useGameMachine(): GameMachine {
   }, [stopPressCharge])
 
   const startGame = useCallback(() => {
+    unlockGameAudio()
+    playGameSound('gameStart')
     const motionEvent = window.DeviceMotionEvent as MotionPermissionEvent | undefined
     void motionEvent?.requestPermission?.().catch(() => undefined)
     setDrawnReward(existingMainReward)
     setIsReplayRound(Boolean(existingMainReward))
     setCharge(12)
+    readySoundPlayed.current = false
     clearError()
     setPhase('charging')
   }, [clearError, existingMainReward])
@@ -141,6 +174,7 @@ export function useGameMachine(): GameMachine {
     drawLock.current = true
     setIsDrawLocked(true)
     clearError()
+    playGameSound('spin')
     setPhase('drawing')
     navigator.vibrate?.([40, 30, 70])
 
@@ -148,28 +182,37 @@ export function useGameMachine(): GameMachine {
       if (isReplayRound && existingMainReward) {
         setDrawnReward(existingMainReward)
         preloadImage(getCapsuleTheme(existingMainReward.tier).image)
-        schedule(() => setPhase('capsuleDropped'), 650)
+        schedule(() => {
+          setPhase('capsuleDropped')
+          playGameSound('drop')
+        }, 650)
         return
       }
 
       const nextReward = await drawMainReward()
       setDrawnReward(nextReward)
       preloadImage(getCapsuleTheme(nextReward.tier).image)
-      schedule(() => setPhase('capsuleDropped'), 850)
+      schedule(() => {
+        setPhase('capsuleDropped')
+        playGameSound('drop')
+      }, 850)
     } catch {
       drawLock.current = false
       setIsDrawLocked(false)
       setPhase('error')
+      playGameSound('error')
     }
   }, [canSpin, clearError, drawMainReward, existingMainReward, isReplayRound, schedule])
 
   const openCapsule = useCallback(() => {
     if (!reward || phase !== 'capsuleDropped') return
+    playGameSound('open')
     setPhase('opening')
     navigator.vibrate?.([30, 20, 30])
     confetti({ particleCount: 70, spread: 60, origin: { y: 0.7 } })
     schedule(() => {
       setPhase('completed')
+      playGameSound('reward')
       confetti({ particleCount: 90, spread: 70, origin: { y: 0.68 } })
     }, 900)
   }, [phase, reward, schedule])
@@ -178,6 +221,8 @@ export function useGameMachine(): GameMachine {
     drawLock.current = false
     setIsDrawLocked(false)
     clearError()
+    readySoundPlayed.current = true
+    playGameSound('ready')
     setPhase('charging')
     setCharge(100)
   }, [clearError])
@@ -190,6 +235,8 @@ export function useGameMachine(): GameMachine {
     setDrawnReward(replayReward)
     clearError()
     setCharge(0)
+    readySoundPlayed.current = false
+    playGameSound('uiTap')
     setPhase('intro')
   }, [clearError, drawnReward, existingMainReward])
 

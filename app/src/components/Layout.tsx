@@ -1,9 +1,13 @@
 import { Outlet } from 'react-router-dom'
+import FullscreenToggle from './FullscreenToggle'
 
 export default function Layout() {
   return (
-    <div className="min-h-[100dvh] bg-parchment">
-      <Outlet />
+    <div className="game-backdrop">
+      <div className="game-frame">
+        <FullscreenToggle />
+        <Outlet />
+      </div>
     </div>
   )
 }

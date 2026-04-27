@@ -39,7 +39,9 @@ test('API persists registration, reward issue, friendship, redeem, and admin sta
       ...process.env,
       PORT: String(port),
       DATABASE_PATH: path.join(tempDir, 'campaign.sqlite'),
+      NODE_ENV: 'test',
       REQUIRE_LINE_AUTH: 'false',
+      LINE_TEST_PROFILE_USER_ID: 'UrealLineUser',
     },
     stdio: 'ignore',
   })
@@ -75,9 +77,21 @@ test('API persists registration, reward issue, friendship, redeem, and admin sta
     assert.equal(firstDraw.reward.id, duplicateDraw.reward.id)
     assert.match(firstDraw.reward.code, /^RX-JYP-\d{4}$/)
 
+    const blockedBonus = await fetch(`${baseUrl}/api/rewards/share-bonus`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        customerId: registered.customer.id,
+        tracking: { branch: 'test', qrId: 'front01' },
+      }),
+    })
+    assert.equal(blockedBonus.status, 403)
+
     const friendship = await post(baseUrl, '/api/friendships/verify', {
       customerId: registered.customer.id,
+      lineAccessToken: 'test-line-access-token',
       lineUserId: 'UrealLineUser',
+      friendFlag: true,
       tracking: { branch: 'สีลม', qrId: 'front01' },
     })
     assert.equal(friendship.wallet.friendUnlocked, true)

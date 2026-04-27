@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import {
   ChevronRight,
   ClipboardCheck,
@@ -17,6 +17,10 @@ import {
 import { rewardTemplates } from '../lib/campaign'
 import { useGame } from '../context/GameContext'
 import { getLiffEntryUrl } from '../lib/lineLiff'
+import { gameAssets } from '../lib/gameAssets'
+import GachaButton from '../components/game/GachaButton'
+import { useFullscreen } from '../hooks/useFullscreen'
+import { playGameSound, unlockGameAudio } from '../lib/gameAudio'
 
 const easeSpring = [0.34, 1.56, 0.64, 1] as [number, number, number, number]
 const cnyLogoUrl = 'https://manager.cnypharmacy.com/assets/img/cny-logo.png'
@@ -24,9 +28,11 @@ const lineAddFriendUrl = 'https://page.line.me/clinicya'
 
 export default function LandingPage() {
   const navigate = useNavigate()
+  const shouldReduceMotion = useReducedMotion()
   const [searchParams] = useSearchParams()
   const { state, hasPlayed } = useGame()
   const [showRules, setShowRules] = useState(false)
+  const { enter: enterFullscreen } = useFullscreen()
   const query = searchParams.toString()
   const liffEntryUrl = getLiffEntryUrl()
   const requiresLine = state.lineConfig.liffRequired
@@ -46,10 +52,17 @@ export default function LandingPage() {
   const startPath = state.customer ? '/game' : '/register'
   const startLabel = 'เล่นเกมส์'
 
+  const handleStart = () => {
+    unlockGameAudio()
+    playGameSound('uiTap')
+    void enterFullscreen()
+    navigate(`${startPath}${query ? `?${query}` : ''}`)
+  }
+
   return (
-    <div className="min-h-[100dvh] overflow-hidden bg-parchment text-ink-dark">
-      <div className="fixed inset-0 pointer-events-none bg-[linear-gradient(180deg,#F7F2E8_0%,#ECF7F0_100%)]" />
-      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-[460px] flex-col px-5 pb-24 pt-4">
+    <div className="relative min-h-full w-full overflow-hidden bg-parchment text-ink-dark">
+      <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(180deg,#FBF6E6_0%,#F1EAD0_50%,#DCE7C5_100%)]" />
+      <div className="relative z-10 mx-auto flex min-h-full w-full max-w-[460px] flex-col px-5 pb-10 pt-4">
         <header className="px-1 py-2">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
@@ -78,21 +91,21 @@ export default function LandingPage() {
           </div>
         </header>
 
-        <section className="relative flex flex-1 flex-col items-center pt-8 text-center">
+        <section className="relative flex flex-1 flex-col items-center pt-5 text-center">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, ease: easeSpring }}
-            className="rounded-full bg-white/85 px-4 py-2 text-xs font-semibold leading-5 text-deep-green shadow-sm"
+            className="rounded-full border border-gold/30 bg-white/90 px-4 py-2 text-xs font-semibold leading-5 text-deep-green shadow-sm"
           >
-            ร้านขายส่งยา อันดับ 1 ที่คุณวางใจ อาหารเสริม และอุปกรณ์การแพทย์ครบวงจร
+            เล่นกาชา 10 วินาที ลุ้นคูปองลูกค้าใหม่
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.08, duration: 0.5, ease: easeSpring }}
-            className="mt-5 font-display text-[40px] font-semibold leading-[1.08] text-pharmacy-green"
+            className="mt-4 font-display text-[42px] font-extrabold leading-[1.02] text-pharmacy-green drop-shadow-[0_2px_0_rgba(255,255,255,0.9)]"
           >
             {state.campaign.campaignTitle}
           </motion.h1>
@@ -100,30 +113,52 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.16, duration: 0.45 }}
-            className="mt-3 max-w-[340px] text-[15px] leading-7 text-ink-medium"
+            className="mt-3 max-w-[340px] text-[15px] font-medium leading-7 text-ink-medium"
           >
             {state.campaign.campaignSubtitle}
           </motion.p>
 
           <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18, duration: 0.45 }}
+            className="mt-4 grid w-full grid-cols-3 gap-2 text-center"
+          >
+            {[
+              { label: 'แอด LINE', value: 'ง่าย' },
+              { label: 'ลุ้นคูปอง', value: 'ทันที' },
+              { label: 'เก็บใน Wallet', value: 'ไม่หาย' },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className="rounded-[16px] border border-[#E2C076] bg-white/72 px-2 py-2 shadow-sm backdrop-blur"
+              >
+                <p className="font-display text-base font-extrabold leading-none text-[#A85A00]">{item.value}</p>
+                <p className="mt-1 text-[10px] font-semibold text-ink-light">{item.label}</p>
+              </div>
+            ))}
+          </motion.div>
+
+          <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.45 }}
-            className="mt-5 w-full"
+            className="mt-4 w-full"
           >
             {canStartCampaign ? (
-              <motion.button
-                onClick={() => navigate(`${startPath}${query ? `?${query}` : ''}`)}
-                className="relative mx-auto flex h-14 w-full max-w-[320px] items-center justify-center gap-2 overflow-hidden rounded-[8px] border border-gold/45 bg-[linear-gradient(180deg,#3A9C6F,#15543F)] px-5 font-display text-lg font-semibold text-white shadow-[0_18px_34px_rgba(46,125,90,0.30),inset_0_1px_0_rgba(255,255,255,0.24)] transition active:scale-[0.96]"
+              <motion.div
+                className="mx-auto max-w-[320px]"
                 whileTap={{ scale: 0.94 }}
                 transition={{ duration: 0.16 }}
               >
-                <span className="absolute inset-x-6 top-0 h-px bg-gold/70" />
-                <span className="relative flex items-center justify-center gap-2 drop-shadow-[0_2px_0_rgba(22,74,56,0.45)]">
-                  {startLabel}
-                  <Play size={18} fill="currentColor" />
-                </span>
-              </motion.button>
+                <GachaButton
+                  onClick={handleStart}
+                  label={startLabel}
+                  iconTrailing={<Play size={18} fill="currentColor" />}
+                  size="lg"
+                  className="animate-pulse-glow"
+                />
+              </motion.div>
             ) : (
               <div className="space-y-3">
                 <div className="rounded-[8px] border border-gold/35 bg-gold/10 px-4 py-3 text-left text-sm leading-6 text-ink-medium">
@@ -159,21 +194,34 @@ export default function LandingPage() {
             initial={{ opacity: 0, scale: 0.86 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.24, duration: 0.55, ease: easeSpring }}
-            className="relative mt-6"
+            className="relative mt-5"
           >
-            <motion.img
-              src="/landing-jar-hero.png"
-              alt="แคปซูลคูปอง CNY HEALTHCARE"
-              className="relative z-10 h-auto w-[min(82vw,330px)]"
-              animate={{ y: [0, -7, 0], rotate: [-0.8, 0.8, -0.8] }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            <motion.div
+              aria-hidden="true"
+              className="absolute left-1/2 top-6 h-56 w-56 -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,205,79,0.42),transparent_68%)] blur-sm"
+              animate={{ scale: [1, 1.08, 1], opacity: [0.7, 1, 0.7] }}
+              transition={{ duration: 2.6, repeat: shouldReduceMotion ? 0 : Infinity, ease: 'easeInOut' }}
             />
             <motion.img
-              src="/mascot-happy.png"
-              alt="มาสคอต CNY ทักทาย"
-              className="absolute -right-4 bottom-0 z-20 h-28 object-contain drop-shadow-[0_12px_18px_rgba(22,74,56,0.24)]"
+              src={gameAssets.machine}
+              alt="ตู้กาชาปองรับคูปอง CNY HEALTHCARE"
+              className="relative z-10 h-auto w-[min(78vw,315px)] object-contain drop-shadow-[0_22px_28px_rgba(82,46,12,0.24)]"
+              animate={{ y: [0, -7, 0], rotate: [-0.8, 0.8, -0.8] }}
+              transition={{ duration: 4, repeat: shouldReduceMotion ? 0 : Infinity, ease: 'easeInOut' }}
+            />
+            <motion.img
+              src={gameAssets.mascot.idle}
+              alt="แมวมาสคอตทักทาย"
+              className="absolute -right-2 -bottom-2 z-20 h-28 object-contain drop-shadow-[0_12px_18px_rgba(22,74,56,0.24)]"
               animate={{ y: [0, -6, 0], rotate: [-3, 3, -3] }}
-              transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
+              transition={{ duration: 3.2, repeat: shouldReduceMotion ? 0 : Infinity, ease: 'easeInOut' }}
+            />
+            <motion.img
+              src={gameAssets.mascot.surprised}
+              alt="ลิงน้อยทักทาย"
+              className="absolute -left-3 bottom-0 z-20 h-24 object-contain drop-shadow-[0_12px_18px_rgba(22,74,56,0.24)]"
+              animate={{ y: [0, -5, 0], rotate: [3, -3, 3] }}
+              transition={{ duration: 3.6, repeat: shouldReduceMotion ? 0 : Infinity, ease: 'easeInOut' }}
             />
             <div className="absolute bottom-2 left-1/2 h-4 w-52 -translate-x-1/2 rounded-full bg-ink-dark/10 blur-md" />
           </motion.div>
@@ -183,7 +231,7 @@ export default function LandingPage() {
 
       {showRules && (
         <div className="fixed inset-0 z-50 flex items-end bg-black/45">
-          <div className="mx-auto max-h-[82vh] w-full max-w-[460px] overflow-y-auto rounded-t-[16px] bg-white p-5 shadow-elevated">
+          <div className="mx-auto max-h-[82vh] w-full max-w-[460px] overflow-y-auto rounded-t-[20px] bg-white p-5 shadow-elevated">
             <div className="mb-4 flex items-start justify-between gap-4">
               <div>
                 <p className="font-display text-2xl font-semibold">กติกาแคมเปญ</p>
@@ -192,7 +240,7 @@ export default function LandingPage() {
               <button
                 aria-label="ปิดกติกา"
                 onClick={() => setShowRules(false)}
-                className="grid size-9 place-items-center rounded-[8px] bg-muted"
+                className="grid size-9 place-items-center rounded-[12px] bg-muted"
               >
                 <X size={18} />
               </button>
@@ -206,7 +254,7 @@ export default function LandingPage() {
                   return (
                     <div key={step.label} className="flex flex-1 items-center">
                       <div className="flex flex-1 flex-col items-center gap-2">
-                        <div className="grid size-10 place-items-center rounded-[8px] bg-sky-wash text-pharmacy-green shadow-sm">
+                        <div className="grid size-10 place-items-center rounded-[12px] bg-sky-wash text-pharmacy-green shadow-sm">
                           <Icon size={20} />
                         </div>
                         <span className="text-[11px] font-medium text-ink-medium">{step.label}</span>
@@ -224,7 +272,7 @@ export default function LandingPage() {
                 {rewardTemplates.slice(0, 3).map((reward) => (
                   <div
                     key={reward.id}
-                    className="rounded-[8px] border border-paper-line bg-white p-3 text-left"
+                    className="rounded-[12px] border border-paper-line bg-white p-3 text-left"
                   >
                     <Ticket size={18} className="text-gold" />
                     <p className="mt-2 text-sm font-semibold leading-snug">{reward.name}</p>

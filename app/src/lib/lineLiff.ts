@@ -21,6 +21,13 @@ type LiffWithRequestFriendship = typeof liff & {
 
 const liffId = import.meta.env.VITE_LIFF_ID as string | undefined
 
+export const getDevLineTestSession = () =>
+  import.meta.env.DEV
+    ? (window as typeof window & {
+        __CNY_TEST_LINE_SESSION__?: { accessToken: string; userId: string; friendFlag: boolean }
+      }).__CNY_TEST_LINE_SESSION__
+    : undefined
+
 const explainFriendshipError = (error: unknown) => {
   const message = error instanceof Error ? error.message : String(error)
   if (
@@ -114,6 +121,27 @@ export const requestLineFriendship = async () => {
     const friendship = await liff.getFriendship()
     if (!friendship.friendFlag) {
       throw new Error('ยังตรวจไม่พบว่าเพิ่มเพื่อน LINE OA แล้ว')
+    }
+    return friendship.friendFlag
+  } catch (error) {
+    throw explainFriendshipError(error)
+  }
+}
+
+export const verifyCurrentLineFriendship = async () => {
+  const devLineSession = getDevLineTestSession()
+  if (devLineSession?.friendFlag) return true
+  if (!liffId) throw new Error('เธขเธฑเธเนเธกเนเนเธ”เนเธ•เธฑเนเธเธเนเธฒ VITE_LIFF_ID')
+
+  try {
+    await liff.init({ liffId })
+    if (!liff.isLoggedIn()) {
+      liff.login()
+      throw new Error('Please sign in with LINE before checking friendship')
+    }
+    const friendship = await liff.getFriendship()
+    if (!friendship.friendFlag) {
+      throw new Error('LINE OA friendship was not detected yet')
     }
     return friendship.friendFlag
   } catch (error) {

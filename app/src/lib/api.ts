@@ -112,7 +112,9 @@ export const drawMainReward = (customerId: string, tracking: TrackingParams) =>
 
 export const verifyFriendship = (payload: {
   customerId: string
+  lineAccessToken?: string | null
   lineUserId?: string | null
+  friendFlag: boolean
   tracking: TrackingParams
 }) =>
   request<{ wallet: WalletResponse }>('/friendships/verify', {
