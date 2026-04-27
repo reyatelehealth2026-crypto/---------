@@ -326,18 +326,32 @@ export default function GamePage() {
               {(phase === 'opening' || phase === 'completed') && (
                 <motion.div
                   key="open"
-                  className="absolute inset-x-0 bottom-2 z-30 mx-auto flex flex-col items-center"
+                  className="absolute inset-x-0 bottom-4 z-30 mx-auto flex flex-col items-center"
                   initial={{ opacity: 0, scale: 0.75 }}
                   animate={{ opacity: 1, scale: [0.92, 1.05, 1] }}
                   exit={{ opacity: 0 }}
                 >
-                  <GameImage
-                    src={cutePetAssets.rewards.popup}
-                    alt="คูปองรางวัล"
-                    className="relative h-48 object-contain drop-shadow-[0_24px_28px_rgba(82,46,12,0.32)]"
-                  />
+                  <div className="relative h-36 w-64 overflow-hidden rounded-[22px] border-2 border-[#FFD36A] bg-[linear-gradient(180deg,#FFF4B8_0%,#FFB323_46%,#F07100_100%)] shadow-[0_22px_28px_rgba(82,46,12,0.30),inset_0_2px_0_rgba(255,255,255,0.65)]">
+                    <div className="absolute inset-x-5 top-2 h-3 rounded-full bg-white/45 blur-[2px]" />
+                    <GameImage
+                      src={cutePetAssets.props.confetti}
+                      decorative
+                      className="absolute inset-0 size-full object-cover opacity-35"
+                    />
+                    <GameImage
+                      src={cutePetAssets.mascots.cat}
+                      decorative
+                      className="absolute -left-2 bottom-1 h-16 object-contain opacity-80"
+                    />
+                    <GameImage
+                      src={cutePetAssets.rewards.giftBox}
+                      decorative
+                      className="absolute -right-1 bottom-1 h-16 object-contain opacity-90"
+                    />
+                    <div className="absolute inset-x-10 bottom-4 h-4 rounded-full bg-[#3A1A05]/18 blur-md" />
+                  </div>
                   {phase === 'completed' && reward && (
-                    <div className="absolute inset-x-10 top-14 rounded-[18px] bg-white/92 px-3 py-2 text-center shadow-[0_12px_24px_rgba(82,46,12,0.18)]">
+                    <div className="absolute inset-x-8 top-7 rounded-[18px] border-2 border-white bg-white/95 px-3 py-2 text-center shadow-[0_12px_24px_rgba(82,46,12,0.18)]">
                       <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-pharmacy-green">
                         คุณได้คูปอง
                       </p>

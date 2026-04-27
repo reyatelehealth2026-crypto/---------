@@ -23,6 +23,14 @@ const preloadImage = (src: string) => {
   image.src = src
 }
 
+const shouldReduceMotion = () =>
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+const celebrate = (options: confetti.Options) => {
+  if (shouldReduceMotion()) return
+  confetti(options)
+}
+
 export interface GameMachine {
   phase: GamePhase
   charge: number
@@ -209,11 +217,11 @@ export function useGameMachine(): GameMachine {
     playGameSound('open')
     setPhase('opening')
     navigator.vibrate?.([30, 20, 30])
-    confetti({ particleCount: 70, spread: 60, origin: { y: 0.7 } })
+    celebrate({ particleCount: 70, spread: 60, origin: { y: 0.7 } })
     schedule(() => {
       setPhase('completed')
       playGameSound('reward')
-      confetti({ particleCount: 90, spread: 70, origin: { y: 0.68 } })
+      celebrate({ particleCount: 90, spread: 70, origin: { y: 0.68 } })
     }, 900)
   }, [phase, reward, schedule])
 
