@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 import { GameProvider } from './context/GameContext'
 import Layout from './components/Layout'
+import EggLoader from './components/game/EggLoader'
 
 const LandingPage = lazy(() => import('./pages/LandingPage'))
 const RegisterPage = lazy(() => import('./pages/RegisterPage'))
@@ -16,8 +17,10 @@ function App() {
     <GameProvider>
       <Suspense
         fallback={
-          <div className="min-h-[100dvh] bg-parchment flex items-center justify-center">
-            <div className="w-12 h-12 rounded-full border-4 border-pharmacy-green border-t-transparent animate-spin" />
+          <div className="game-backdrop">
+            <div className="game-frame flex items-center justify-center">
+              <EggLoader label="กำลังโหลดเกม..." />
+            </div>
           </div>
         }
       >

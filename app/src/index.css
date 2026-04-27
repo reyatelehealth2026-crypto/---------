@@ -34,12 +34,53 @@
 
   html {
     scroll-behavior: smooth;
+    height: 100%;
+    /* Disable iOS auto text resize when rotating */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+    height: 100dvh;
+  }
+
+  #root {
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #root::-webkit-scrollbar {
+    width: 0;
   }
 
   body {
-    @apply bg-parchment font-sans text-ink-dark antialiased;
+    @apply font-sans text-ink-dark antialiased;
+    margin: 0;
+    background-color: #0c1224;
+    background-image:
+      radial-gradient(circle at 18% 22%, rgba(212, 184, 90, 0.22), transparent 55%),
+      radial-gradient(circle at 82% 78%, rgba(46, 125, 90, 0.18), transparent 55%),
+      linear-gradient(135deg, #0c1224 0%, #1c1932 60%, #0c1224 100%);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    overscroll-behavior: none;
+    overflow: hidden;
+    /* fallback solid color for desktop backdrop */
+  }
+
+  /* Allow text selection inside form fields */
+  input,
+  textarea,
+  [contenteditable='true'] {
+    -webkit-user-select: text;
+    user-select: text;
   }
 
   button,
@@ -65,5 +106,119 @@
 
   ::-webkit-scrollbar-thumb:hover {
     background: #8B7E6E;
+  }
+}
+
+@layer components {
+  /* ----- Mobile-game shell ----- */
+  .game-backdrop {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .game-frame {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    background-color: #F6F1DF;
+    background-image: linear-gradient(180deg, #FBF6E6 0%, #F1EAD0 60%, #E8E2C4 100%);
+    /* Becomes containing block for position: fixed children, scoping page backgrounds inside the frame */
+    isolation: isolate;
+    transform: translateZ(0);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .game-frame::-webkit-scrollbar {
+    width: 0;
+  }
+
+  /* Desktop / tablet: render as a centered "phone" with rounded edges, dark backdrop */
+  @media (min-width: 760px) {
+    .game-backdrop {
+      padding: 28px;
+    }
+
+    .game-frame {
+      width: min(440px, 100%);
+      height: min(calc(100dvh - 56px), 920px);
+      max-height: min(calc(100dvh - 56px), 920px);
+      border-radius: 38px;
+      box-shadow:
+        0 50px 120px rgba(0, 0, 0, 0.55),
+        0 0 0 1px rgba(255, 255, 255, 0.06),
+        inset 0 0 0 6px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Subtle glow ring around the frame for "device" feel */
+    .game-backdrop::before {
+      content: '';
+      position: absolute;
+      width: min(520px, 100%);
+      height: min(calc(100dvh - 24px), 1000px);
+      border-radius: 56px;
+      background: radial-gradient(circle, rgba(255, 205, 79, 0.18), transparent 70%);
+      filter: blur(40px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .game-frame {
+      z-index: 1;
+    }
+  }
+}
+
+@layer utilities {
+  .game-stage-depth {
+    box-shadow:
+      inset 0 0 0 2px rgba(255, 255, 255, 0.42),
+      inset 0 -26px 42px rgba(90, 46, 10, 0.14),
+      0 18px 34px rgba(82, 46, 12, 0.18);
+  }
+
+  .game-shine {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .game-shine::after {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    inset: -40% auto -40% -55%;
+    width: 42%;
+    transform: rotate(18deg);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+    animation: game-shine-sweep 2.8s ease-in-out infinite;
+  }
+}
+
+@keyframes game-shine-sweep {
+  0%,
+  45% {
+    left: -55%;
+  }
+  100% {
+    left: 120%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-shine::after {
+    animation: none !important;
+    display: none;
+  }
+
+  .animate-pulse-glow,
+  .animate-shimmer {
+    animation: none !important;
   }
 }

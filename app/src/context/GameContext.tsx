@@ -14,7 +14,13 @@ import {
   verifyFriendship as verifyFriendshipApi,
 } from '../lib/api'
 import type { LineSession } from '../lib/lineLiff'
-import { initializeLine, requestLineFriendship, shareCampaignToLine } from '../lib/lineLiff'
+import {
+  getDevLineTestSession,
+  initializeLine,
+  requestLineFriendship,
+  shareCampaignToLine,
+  verifyCurrentLineFriendship,
+} from '../lib/lineLiff'
 
 interface GameState {
   tracking: TrackingParams
@@ -211,9 +217,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setSubmitting(true)
     try {
       await requestLineFriendship()
+      const devLineSession = getDevLineTestSession()
       const response = await verifyFriendshipApi({
         customerId: state.customer.id,
-        lineUserId: state.line?.profile?.userId,
+        lineAccessToken: state.line?.accessToken ?? devLineSession?.accessToken,
+        lineUserId: state.line?.profile?.userId ?? devLineSession?.userId,
+        friendFlag: true,
         tracking: state.tracking,
       })
       setState((prev) => ({ ...applyWallet(prev, response.wallet), error: null }))
@@ -223,15 +232,19 @@ export function GameProvider({ children }: { children: ReactNode }) {
     } finally {
       setSubmitting(false)
     }
-  }, [state.customer, state.line?.profile?.userId, state.tracking])
+  }, [state.customer, state.line?.accessToken, state.line?.profile?.userId, state.tracking])
 
   const confirmFriendGateManually = useCallback(async () => {
     if (!state.customer) throw new Error('ต้องลงทะเบียนก่อนปลดล็อกคูปอง')
     setSubmitting(true)
     try {
+      const friendFlag = await verifyCurrentLineFriendship()
+      const devLineSession = getDevLineTestSession()
       const response = await verifyFriendshipApi({
         customerId: state.customer.id,
-        lineUserId: state.line?.profile?.userId,
+        lineAccessToken: state.line?.accessToken ?? devLineSession?.accessToken,
+        lineUserId: state.line?.profile?.userId ?? devLineSession?.userId,
+        friendFlag,
         tracking: state.tracking,
       })
       setState((prev) => ({ ...applyWallet(prev, response.wallet), error: null }))
@@ -241,7 +254,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     } finally {
       setSubmitting(false)
     }
-  }, [state.customer, state.line?.profile?.userId, state.tracking])
+  }, [state.customer, state.line?.accessToken, state.line?.profile?.userId, state.tracking])
 
   const claimShareBonus = useCallback(async () => {
     if (!state.customer) throw new Error('ต้องลงทะเบียนก่อนรับโบนัส')

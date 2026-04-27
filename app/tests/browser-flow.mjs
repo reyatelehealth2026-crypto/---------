@@ -21,6 +21,13 @@ const page = await browser.newPage({
   locale: 'th-TH',
   viewport: { width: 390, height: 844 },
 })
+await page.addInitScript(() => {
+  window.__CNY_TEST_LINE_SESSION__ = {
+    accessToken: 'test-line-access-token',
+    userId: 'UrealLineUser',
+    friendFlag: true,
+  }
+})
 const phone = `08${String(Date.now()).slice(-8)}`
 
 const consoleErrors = []
@@ -46,7 +53,7 @@ try {
   await expectVisibleText('CNY HEALTHCARE')
   await page.waitForTimeout(700)
   await page.screenshot({ path: path.join(outputDir, 'landing-mobile.png'), fullPage: true })
-  await page.getByRole('button', { name: /เล่นเกมส์|เริ่มรับสิทธิ์/ }).click()
+  await page.getByRole('button', { name: /เล่นเกมส์|เริ่มรับสิทธิ์|เริ่มเล่นกาชาปอง/ }).click()
 
   await expectVisibleText('ชื่อเล่น')
   await page.getByPlaceholder('เช่น คุณนิด').fill('คุณนิด')
@@ -54,14 +61,18 @@ try {
   await page.getByRole('button', { name: /ยืนยันและเล่นเกมส์|ยืนยันและรับสิทธิ์/ }).click()
 
   await expectVisibleText('เตรียมหมุนตู้')
-  await page.getByRole('button', { name: /เริ่มหมุนตู้/ }).click()
+  await page.getByRole('button', { name: /เริ่มหมุนตู้/ }).click({ force: true })
 
   const chargeButton = page.getByRole('button', { name: /แตะ .*เติมพลัง/ })
+  await chargeButton.waitFor({ state: 'visible', timeout: 5000 })
   for (let i = 0; i < 12; i += 1) {
-    await chargeButton.click()
+    if ((await chargeButton.count()) === 0) break
+    await chargeButton.click({ force: true, delay: 80 })
+    await page.waitForTimeout(80)
   }
-
-  await page.getByRole('button', { name: /หมุนรับแคปซูล/ }).click()
+  const spinButton = page.getByRole('button', { name: /หมุนรับแคปซูล/ })
+  await spinButton.waitFor({ state: 'visible', timeout: 5000 })
+  await spinButton.click({ force: true })
   await expectVisibleText('แคปซูลของคุณออกมาแล้ว')
   await page.getByRole('button', { name: /เปิดแคปซูล/ }).click()
   await expectVisibleText('ดูคูปองและปลดล็อก LINE')
@@ -70,7 +81,7 @@ try {
 
   await expectVisibleText('ปลดล็อกคูปองด้วย LINE OA')
   await page.getByRole('button', { name: /เปิด LINE @clinicya/ }).click()
-  await page.getByRole('button', { name: /ฉันเพิ่มเพื่อนแล้ว ไปต่อ/ }).click()
+  await page.getByRole('button', { name: /ตรวจสอบการเพิ่มเพื่อน LINE/ }).click()
   await expectVisibleText('Redeem code')
   await page.screenshot({ path: path.join(outputDir, 'reward-unlocked-mobile.png'), fullPage: true })
 
@@ -87,15 +98,20 @@ try {
 
   await page.goto(`${baseUrl}/#/game`, { waitUntil: 'networkidle' })
   await expectVisibleText('เล่นซ้ำได้ไม่จำกัดเพื่อทดลองเกม')
-  await page.getByRole('button', { name: /เริ่มหมุนตู้/ }).click()
+  await page.getByRole('button', { name: /เริ่มหมุนตู้/ }).click({ force: true })
   const replayChargeButton = page.getByRole('button', { name: /แตะ .*เติมพลัง/ })
+  await replayChargeButton.waitFor({ state: 'visible', timeout: 5000 })
   for (let i = 0; i < 12; i += 1) {
-    await replayChargeButton.click()
+    if ((await replayChargeButton.count()) === 0) break
+    await replayChargeButton.click({ force: true, delay: 80 })
+    await page.waitForTimeout(80)
   }
-  await page.getByRole('button', { name: /หมุนรับแคปซูล/ }).click()
+  const replaySpinButton = page.getByRole('button', { name: /หมุนรับแคปซูล/ })
+  await replaySpinButton.waitFor({ state: 'visible', timeout: 5000 })
+  await replaySpinButton.click({ force: true })
   await expectVisibleText('แคปซูลของคุณออกมาแล้ว')
   await page.getByRole('button', { name: /เปิดแคปซูล/ }).click()
-  await expectVisibleText('คูปองเดิมจากครั้งแรก')
+  await expectVisibleText('คูปองเดิมของคุณ')
 
   const rewardsAfterReplay = await page.evaluate(async () => {
     const customerId = window.sessionStorage.getItem('pharmacy-campaign-customer-id')

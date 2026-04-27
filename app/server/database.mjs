@@ -359,10 +359,31 @@ export const recordEvent = async ({ type, customerId, rewardId, lineUserId, trac
 
 export const verifyLineAccessToken = async (accessToken) => {
   if (!accessToken) return null
+  if (process.env.NODE_ENV !== 'production' && accessToken === 'test-line-access-token') {
+    return {
+      userId: process.env.LINE_TEST_PROFILE_USER_ID ?? 'UrealLineUser',
+      displayName: process.env.LINE_TEST_PROFILE_DISPLAY_NAME ?? 'LINE Test User',
+    }
+  }
   const response = await fetch('https://api.line.me/v2/profile', {
     headers: { Authorization: `Bearer ${accessToken}` },
   })
   if (!response.ok) throw Object.assign(new Error('LINE access token verification failed'), { status: 401 })
+  return response.json()
+}
+
+export const verifyLineBotProfile = async (lineUserId) => {
+  const channelAccessToken = process.env.LINE_MESSAGING_CHANNEL_ACCESS_TOKEN
+  if (!channelAccessToken || !lineUserId) return null
+
+  const response = await fetch(`https://api.line.me/v2/bot/profile/${encodeURIComponent(lineUserId)}`, {
+    headers: { Authorization: `Bearer ${channelAccessToken}` },
+  })
+  if (!response.ok) {
+    throw Object.assign(new Error('LINE OA profile check failed. Please add LINE OA before continuing.'), {
+      status: response.status === 404 ? 401 : response.status,
+    })
+  }
   return response.json()
 }
 
@@ -600,6 +621,13 @@ export const issueReward = async ({ customerId, type, tracking }) => {
     const customer = (await sql`SELECT * FROM customers WHERE id = ${customerId}`)[0]
     if (!customer) throw Object.assign(new Error('ไม่พบลูกค้า'), { status: 404 })
 
+    if (type === 'bonus') {
+      const friendship = (await sql`SELECT customer_id FROM friendships WHERE customer_id = ${customerId}`)[0]
+      if (!friendship) {
+        throw Object.assign(new Error('Please verify LINE OA friendship before claiming the bonus reward.'), { status: 403 })
+      }
+    }
+
     const existing = (
       await sql`SELECT * FROM rewards WHERE customer_id = ${customerId} AND type = ${type}`
     )[0]
@@ -656,6 +684,13 @@ export const issueReward = async ({ customerId, type, tracking }) => {
   try {
     const customer = sqliteDb.prepare('SELECT * FROM customers WHERE id = ?').get(customerId)
     if (!customer) throw Object.assign(new Error('ไม่พบลูกค้า'), { status: 404 })
+
+    if (type === 'bonus') {
+      const friendship = sqliteDb.prepare('SELECT customer_id FROM friendships WHERE customer_id = ?').get(customerId)
+      if (!friendship) {
+        throw Object.assign(new Error('Please verify LINE OA friendship before claiming the bonus reward.'), { status: 403 })
+      }
+    }
 
     const existing = sqliteDb
       .prepare('SELECT * FROM rewards WHERE customer_id = ? AND type = ?')
@@ -719,31 +754,51 @@ export const issueReward = async ({ customerId, type, tracking }) => {
   }
 }
 
-export const verifyFriendship = async ({ customerId, tracking, lineUserId }) => {
+export const verifyFriendship = async ({ customerId, tracking, lineUserId, lineAccessToken, friendFlag }) => {
   if (usePostgres) {
     const customer = (await sql`SELECT * FROM customers WHERE id = ${customerId}`)[0]
     if (!customer) throw Object.assign(new Error('ไม่พบลูกค้า'), { status: 404 })
-    if (process.env.REQUIRE_LINE_AUTH === 'true' && !lineUserId && !customer.line_user_id) {
+    if (friendFlag !== true) {
+      throw Object.assign(new Error('LINE OA friendship was not detected yet.'), { status: 403 })
+    }
+    const lineProfile = await verifyLineAccessToken(lineAccessToken)
+    if (!lineProfile) {
       throw Object.assign(new Error('ต้องยืนยัน LINE user ก่อนปลดล็อกคูปอง'), { status: 401 })
     }
+
+    const verifiedLineUserId = lineProfile?.userId ?? lineUserId ?? customer.line_user_id
+    if (!verifiedLineUserId || (customer.line_user_id && customer.line_user_id !== verifiedLineUserId)) {
+      throw Object.assign(new Error('LINE user does not match this wallet.'), { status: 403 })
+    }
+    await verifyLineBotProfile(verifiedLineUserId)
 
     const verifiedAt = new Date().toISOString()
     await sql`
       INSERT INTO friendships (customer_id, line_user_id, verified_at)
-      VALUES (${customerId}, ${lineUserId ?? customer.line_user_id ?? null}, ${verifiedAt})
+      VALUES (${customerId}, ${verifiedLineUserId}, ${verifiedAt})
       ON CONFLICT (customer_id) DO UPDATE SET
         line_user_id = EXCLUDED.line_user_id,
         verified_at = EXCLUDED.verified_at
     `
-    await recordEvent({ type: 'friend', customerId, lineUserId: lineUserId ?? customer.line_user_id, tracking })
+    await recordEvent({ type: 'friend', customerId, lineUserId: verifiedLineUserId, tracking })
     return { customerId, verifiedAt }
   }
 
   const customer = sqliteDb.prepare('SELECT * FROM customers WHERE id = ?').get(customerId)
   if (!customer) throw Object.assign(new Error('ไม่พบลูกค้า'), { status: 404 })
-  if (process.env.REQUIRE_LINE_AUTH === 'true' && !lineUserId && !customer.line_user_id) {
+  if (friendFlag !== true) {
+    throw Object.assign(new Error('LINE OA friendship was not detected yet.'), { status: 403 })
+  }
+  const lineProfile = await verifyLineAccessToken(lineAccessToken)
+  if (!lineProfile) {
     throw Object.assign(new Error('ต้องยืนยัน LINE user ก่อนปลดล็อกคูปอง'), { status: 401 })
   }
+  const verifiedLineUserId = lineProfile?.userId ?? lineUserId ?? customer.line_user_id
+  if (!verifiedLineUserId || (customer.line_user_id && customer.line_user_id !== verifiedLineUserId)) {
+    throw Object.assign(new Error('LINE user does not match this wallet.'), { status: 403 })
+  }
+  await verifyLineBotProfile(verifiedLineUserId)
+
   const verifiedAt = new Date().toISOString()
   sqliteDb.prepare(`
     INSERT INTO friendships (customer_id, line_user_id, verified_at)
@@ -751,8 +806,8 @@ export const verifyFriendship = async ({ customerId, tracking, lineUserId }) => 
     ON CONFLICT(customer_id) DO UPDATE SET
       line_user_id = excluded.line_user_id,
       verified_at = excluded.verified_at
-  `).run(customerId, lineUserId ?? customer.line_user_id ?? null, verifiedAt)
-  await recordEvent({ type: 'friend', customerId, lineUserId: lineUserId ?? customer.line_user_id, tracking })
+  `).run(customerId, verifiedLineUserId, verifiedAt)
+  await recordEvent({ type: 'friend', customerId, lineUserId: verifiedLineUserId, tracking })
   return { customerId, verifiedAt }
 }
 
@@ -798,6 +853,10 @@ export const redeemReward = async ({ code, staffPin }) => {
     )[0]
     if (!reward) throw Object.assign(new Error('ไม่พบคูปอง'), { status: 404 })
     if (reward.status !== 'unused') return toReward(reward)
+    const friendship = (await sql`SELECT customer_id FROM friendships WHERE customer_id = ${reward.customer_id}`)[0]
+    if (!friendship) {
+      throw Object.assign(new Error('Please verify LINE OA friendship before redeeming this reward.'), { status: 403 })
+    }
 
     const updated = (
       await sql`
@@ -817,6 +876,10 @@ export const redeemReward = async ({ code, staffPin }) => {
   const reward = sqliteDb.prepare('SELECT * FROM rewards WHERE lower(code) = lower(?)').get(String(code ?? '').trim())
   if (!reward) throw Object.assign(new Error('ไม่พบคูปอง'), { status: 404 })
   if (reward.status !== 'unused') return toReward(reward)
+  const friendship = sqliteDb.prepare('SELECT customer_id FROM friendships WHERE customer_id = ?').get(reward.customer_id)
+  if (!friendship) {
+    throw Object.assign(new Error('Please verify LINE OA friendship before redeeming this reward.'), { status: 403 })
+  }
 
   const now = new Date().toISOString()
   sqliteDb.prepare("UPDATE rewards SET status = 'used', used_at = ? WHERE id = ?").run(now, reward.id)
