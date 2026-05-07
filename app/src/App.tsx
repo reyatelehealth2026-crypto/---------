@@ -9,7 +9,6 @@ const RegisterPage = lazy(() => import('./pages/RegisterPage'))
 const GamePage = lazy(() => import('./pages/GamePage'))
 const RewardPage = lazy(() => import('./pages/RewardPage'))
 const WalletPage = lazy(() => import('./pages/WalletPage'))
-const RedeemPage = lazy(() => import('./pages/RedeemPage'))
 const AdminPage = lazy(() => import('./pages/AdminPage'))
 
 function App() {
@@ -32,7 +31,7 @@ function App() {
             <Route path="/reward" element={<RewardPage />} />
             <Route path="/wallet" element={<WalletPage />} />
           </Route>
-          <Route path="/redeem" element={<RedeemPage />} />
+          <Route path="/redeem" element={<AdminPage />} />
           <Route path="/admin" element={<AdminPage />} />
         </Routes>
       </Suspense>

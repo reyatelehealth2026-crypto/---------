@@ -105,7 +105,7 @@ export default function RegisterPage() {
               <div className="rounded-[16px] border-2 border-[#E2C076] bg-[#FFF6DC] px-4 py-3 shadow-sm">
                 <p className="text-xs font-semibold text-pharmacy-green">เริ่มแคมเปญลูกค้าใหม่</p>
                 <h1 className="mt-1 font-display text-xl font-extrabold leading-tight text-[#5A2E0F]">
-                  ลงทะเบียนรับสิทธิ์ส่วนลดสูงสุด 600 บาท
+                  ลงทะเบียนเล่นกาชารับของรางวัล
                 </h1>
               </div>
             </div>
@@ -165,7 +165,7 @@ export default function RegisterPage() {
                   className="mt-1 size-4 accent-pharmacy-green"
                 />
                 <span className="text-sm leading-6 text-ink-medium">
-                  ยอมรับเงื่อนไขแคมเปญและแอด LINE @clinicya เพื่อรับคูปอง ส่วนลด และข่าวสารจาก CNY HEALTHCARE
+                  ยอมรับเงื่อนไขแคมเปญและแอด LINE @clinicya เพื่อรับของรางวัลและข่าวสารจาก CNY HEALTHCARE
                 </span>
               </label>
 

@@ -31,12 +31,12 @@ const parseJson = (value, fallback = null) => {
 }
 
 const weightedPick = (templates) => {
-  const availableTemplates = templates.filter((item) => Number(item.weight) > 0)
-  const total = availableTemplates.reduce((sum, item) => sum + Number(item.weight), 0)
+  const availableTemplates = templates.filter((item) => Number(item.stock_remaining) > 0)
+  const total = availableTemplates.reduce((sum, item) => sum + Number(item.stock_remaining), 0)
   if (total <= 0) return null
   let threshold = randomInt(0, total)
   for (const template of availableTemplates) {
-    threshold -= template.weight
+    threshold -= Number(template.stock_remaining)
     if (threshold < 0) return template
   }
   return availableTemplates[availableTemplates.length - 1]
@@ -103,11 +103,14 @@ const toAdminParticipant = (row) => ({
   lineUserId: row.line_user_id,
   registeredAt: row.created_at,
   rewardCount: Number(row.reward_count ?? 0),
+  mainRewardId: row.main_reward_id,
   mainRewardName: row.main_reward_name,
   mainRewardCode: row.main_reward_code,
   mainRewardStatus: row.main_reward_status,
+  mainRewardUsedAt: row.main_reward_used_at,
   lastRewardAt: row.last_reward_at,
   friendUnlocked: Boolean(row.friendship_verified_at),
+  friendshipVerifiedAt: row.friendship_verified_at,
 })
 
 const migrateSqlite = () => {
@@ -198,6 +201,12 @@ const migrateSqlite = () => {
       template.image,
       template.terms,
     )
+  }
+
+  const activeTemplateIds = rewardTemplates.map((template) => template.id)
+  if (activeTemplateIds.length > 0) {
+    const placeholders = activeTemplateIds.map(() => '?').join(', ')
+    sqliteDb.prepare(`UPDATE reward_templates SET active = 0 WHERE id NOT IN (${placeholders})`).run(...activeTemplateIds)
   }
 }
 
@@ -292,6 +301,11 @@ const migratePostgres = async () => {
       )
       ON CONFLICT (id) DO NOTHING
     `
+  }
+
+  const activeTemplateIds = rewardTemplates.map((template) => template.id)
+  if (activeTemplateIds.length > 0) {
+    await sql`UPDATE reward_templates SET active = FALSE WHERE NOT (id = ANY(${activeTemplateIds}))`
   }
 }
 
@@ -613,7 +627,7 @@ const insertRewardPostgres = async ({ customerId, type, template }) => {
     }
   }
 
-  throw new Error('ไม่สามารถสร้างคูปองใหม่ได้')
+  throw new Error('ไม่สามารถสร้างรางวัลใหม่ได้')
 }
 
 export const issueReward = async ({ customerId, type, tracking }) => {
@@ -634,7 +648,7 @@ export const issueReward = async ({ customerId, type, tracking }) => {
     if (existing) return toReward(existing)
 
     let templates = await sql`
-      SELECT * FROM reward_templates WHERE active = TRUE AND stock_remaining > 0 AND weight > 0
+      SELECT * FROM reward_templates WHERE active = TRUE AND stock_remaining > 0
     `
     if (templates.length === 0) throw Object.assign(new Error('รางวัลหมดแล้ว'), { status: 409 })
 
@@ -701,7 +715,7 @@ export const issueReward = async ({ customerId, type, tracking }) => {
     }
 
     const templates = sqliteDb
-      .prepare('SELECT * FROM reward_templates WHERE active = 1 AND stock_remaining > 0 AND weight > 0')
+      .prepare('SELECT * FROM reward_templates WHERE active = 1 AND stock_remaining > 0')
       .all()
     if (templates.length === 0) throw Object.assign(new Error('รางวัลหมดแล้ว'), { status: 409 })
 
@@ -763,7 +777,7 @@ export const verifyFriendship = async ({ customerId, tracking, lineUserId, lineA
     }
     const lineProfile = await verifyLineAccessToken(lineAccessToken)
     if (!lineProfile) {
-      throw Object.assign(new Error('ต้องยืนยัน LINE user ก่อนปลดล็อกคูปอง'), { status: 401 })
+      throw Object.assign(new Error('ต้องยืนยัน LINE user ก่อนปลดล็อกรางวัล'), { status: 401 })
     }
 
     const verifiedLineUserId = lineProfile?.userId ?? lineUserId ?? customer.line_user_id
@@ -791,7 +805,7 @@ export const verifyFriendship = async ({ customerId, tracking, lineUserId, lineA
   }
   const lineProfile = await verifyLineAccessToken(lineAccessToken)
   if (!lineProfile) {
-    throw Object.assign(new Error('ต้องยืนยัน LINE user ก่อนปลดล็อกคูปอง'), { status: 401 })
+    throw Object.assign(new Error('ต้องยืนยัน LINE user ก่อนปลดล็อกรางวัล'), { status: 401 })
   }
   const verifiedLineUserId = lineProfile?.userId ?? lineUserId ?? customer.line_user_id
   if (!verifiedLineUserId || (customer.line_user_id && customer.line_user_id !== verifiedLineUserId)) {
@@ -842,16 +856,20 @@ export const getWallet = async (customerId) => {
   }
 }
 
-export const redeemReward = async ({ code, staffPin }) => {
+export const redeemReward = async ({ code, rewardId, staffPin }) => {
   if (process.env.STAFF_REDEEM_PIN && staffPin !== process.env.STAFF_REDEEM_PIN) {
     throw Object.assign(new Error('รหัสพนักงานไม่ถูกต้อง'), { status: 401 })
   }
 
   if (usePostgres) {
+    const cleanRewardId = String(rewardId ?? '').trim()
+    const cleanCode = String(code ?? '').trim()
     const reward = (
-      await sql`SELECT * FROM rewards WHERE lower(code) = lower(${String(code ?? '').trim()})`
+      cleanRewardId
+        ? await sql`SELECT * FROM rewards WHERE id = ${cleanRewardId}`
+        : await sql`SELECT * FROM rewards WHERE lower(code) = lower(${cleanCode})`
     )[0]
-    if (!reward) throw Object.assign(new Error('ไม่พบคูปอง'), { status: 404 })
+    if (!reward) throw Object.assign(new Error('ไม่พบรางวัล'), { status: 404 })
     if (reward.status !== 'unused') return toReward(reward)
     const friendship = (await sql`SELECT customer_id FROM friendships WHERE customer_id = ${reward.customer_id}`)[0]
     if (!friendship) {
@@ -873,8 +891,12 @@ export const redeemReward = async ({ code, staffPin }) => {
     return toReward(finalReward)
   }
 
-  const reward = sqliteDb.prepare('SELECT * FROM rewards WHERE lower(code) = lower(?)').get(String(code ?? '').trim())
-  if (!reward) throw Object.assign(new Error('ไม่พบคูปอง'), { status: 404 })
+  const cleanRewardId = String(rewardId ?? '').trim()
+  const cleanCode = String(code ?? '').trim()
+  const reward = cleanRewardId
+    ? sqliteDb.prepare('SELECT * FROM rewards WHERE id = ?').get(cleanRewardId)
+    : sqliteDb.prepare('SELECT * FROM rewards WHERE lower(code) = lower(?)').get(cleanCode)
+  if (!reward) throw Object.assign(new Error('ไม่พบรางวัล'), { status: 404 })
   if (reward.status !== 'unused') return toReward(reward)
   const friendship = sqliteDb.prepare('SELECT customer_id FROM friendships WHERE customer_id = ?').get(reward.customer_id)
   if (!friendship) {
@@ -933,7 +955,7 @@ export const updateRewardTemplate = async ({ id, updates }) => {
     name: patch.name ?? null,
     description: patch.description ?? null,
     amount: patch.amount ?? null,
-    weight: patch.weight ?? null,
+    weight: patch.weight ?? patch.stock_remaining ?? null,
     stock_remaining: patch.stock_remaining ?? null,
     terms: patch.terms ?? null,
     active: Object.hasOwn(patch, 'active') ? patch.active : null,
@@ -986,6 +1008,7 @@ export const updateRewardTemplate = async ({ id, updates }) => {
 }
 
 export const adminSummary = async () => {
+  const configuredTemplateIds = new Set(rewardTemplates.map((template) => template.id))
   if (usePostgres) {
     const eventRows = await sql`SELECT type, count(*)::int as total FROM campaign_events GROUP BY type`
     const events = Object.fromEntries(eventRows.map((row) => [row.type, row.total]))
@@ -995,7 +1018,9 @@ export const adminSummary = async () => {
       GROUP BY source
       ORDER BY total DESC
     `
-    const templates = await sql`SELECT * FROM reward_templates ORDER BY weight DESC`
+    const templates = (await sql`SELECT * FROM reward_templates ORDER BY weight DESC`).filter((template) =>
+      configuredTemplateIds.has(template.id),
+    )
     const participants = await sql`
       SELECT
         c.id,
@@ -1005,9 +1030,11 @@ export const adminSummary = async () => {
         c.line_user_id,
         c.created_at,
         COALESCE(reward_counts.reward_count, 0)::int AS reward_count,
+        main_reward.id AS main_reward_id,
         main_reward.name AS main_reward_name,
         main_reward.code AS main_reward_code,
         main_reward.status AS main_reward_status,
+        main_reward.used_at AS main_reward_used_at,
         main_reward.issued_at AS last_reward_at,
         f.verified_at AS friendship_verified_at
       FROM customers c
@@ -1017,7 +1044,7 @@ export const adminSummary = async () => {
         WHERE r.customer_id = c.id
       ) reward_counts ON TRUE
       LEFT JOIN LATERAL (
-        SELECT name, code, status, issued_at
+        SELECT id, name, code, status, used_at, issued_at
         FROM rewards
         WHERE customer_id = c.id AND type = 'main'
         ORDER BY issued_at DESC
@@ -1045,7 +1072,9 @@ export const adminSummary = async () => {
       ORDER BY total DESC
     `)
     .all()
-  const templates = sqliteDb.prepare('SELECT * FROM reward_templates ORDER BY weight DESC').all()
+  const templates = sqliteDb.prepare('SELECT * FROM reward_templates ORDER BY weight DESC').all().filter((template) =>
+    configuredTemplateIds.has(template.id),
+  )
   const participants = sqliteDb
     .prepare(`
       SELECT
@@ -1056,9 +1085,11 @@ export const adminSummary = async () => {
         c.line_user_id,
         c.created_at,
         (SELECT count(*) FROM rewards r WHERE r.customer_id = c.id) AS reward_count,
+        (SELECT r.id FROM rewards r WHERE r.customer_id = c.id AND r.type = 'main' ORDER BY r.issued_at DESC LIMIT 1) AS main_reward_id,
         (SELECT r.name FROM rewards r WHERE r.customer_id = c.id AND r.type = 'main' ORDER BY r.issued_at DESC LIMIT 1) AS main_reward_name,
         (SELECT r.code FROM rewards r WHERE r.customer_id = c.id AND r.type = 'main' ORDER BY r.issued_at DESC LIMIT 1) AS main_reward_code,
         (SELECT r.status FROM rewards r WHERE r.customer_id = c.id AND r.type = 'main' ORDER BY r.issued_at DESC LIMIT 1) AS main_reward_status,
+        (SELECT r.used_at FROM rewards r WHERE r.customer_id = c.id AND r.type = 'main' ORDER BY r.issued_at DESC LIMIT 1) AS main_reward_used_at,
         (SELECT r.issued_at FROM rewards r WHERE r.customer_id = c.id AND r.type = 'main' ORDER BY r.issued_at DESC LIMIT 1) AS last_reward_at,
         f.verified_at AS friendship_verified_at
       FROM customers c

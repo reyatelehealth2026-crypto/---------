@@ -213,7 +213,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, [state.customer, state.tracking])
 
   const unlockFriendGate = useCallback(async () => {
-    if (!state.customer) throw new Error('ต้องลงทะเบียนก่อนปลดล็อกคูปอง')
+    if (!state.customer) throw new Error('ต้องลงทะเบียนก่อนปลดล็อกรางวัล')
     setSubmitting(true)
     try {
       await requestLineFriendship()
@@ -235,7 +235,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, [state.customer, state.line?.accessToken, state.line?.profile?.userId, state.tracking])
 
   const confirmFriendGateManually = useCallback(async () => {
-    if (!state.customer) throw new Error('ต้องลงทะเบียนก่อนปลดล็อกคูปอง')
+    if (!state.customer) throw new Error('ต้องลงทะเบียนก่อนปลดล็อกรางวัล')
     setSubmitting(true)
     try {
       const friendFlag = await verifyCurrentLineFriendship()

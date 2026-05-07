@@ -82,7 +82,7 @@ try {
   await expectVisibleText('ปลดล็อกคูปองด้วย LINE OA')
   await page.getByRole('button', { name: /เปิด LINE @clinicya/ }).click()
   await page.getByRole('button', { name: /ตรวจสอบการเพิ่มเพื่อน LINE/ }).click()
-  await expectVisibleText('Redeem code')
+  await expectVisibleText('พร้อมให้พนักงานตรวจสอบ')
   await page.screenshot({ path: path.join(outputDir, 'reward-unlocked-mobile.png'), fullPage: true })
 
   await page.getByRole('button', { name: /เก็บใน Wallet/ }).click()
@@ -124,11 +124,9 @@ try {
   await page.goto(`${baseUrl}/#/wallet`, { waitUntil: 'networkidle' })
   await expectVisibleText('คูปองของฉัน')
 
-  await page.getByRole('button', { name: /ใช้คูปองที่ร้าน/ }).first().click()
+  await page.getByRole('button', { name: /แสดงหน้ารับของให้พนักงาน/ }).first().click()
 
-  await expectVisibleText('Staff Redeem')
-  await page.getByRole('button', { name: /ยืนยันการใช้คูปอง/ }).click()
-  await expectVisibleText('คูปองนี้ถูกใช้แล้ว')
+  await expectVisibleText('พร้อมให้พนักงานตรวจสอบ')
   await page.waitForTimeout(1200)
   await page.screenshot({ path: path.join(outputDir, 'redeemed-mobile.png'), fullPage: true })
 

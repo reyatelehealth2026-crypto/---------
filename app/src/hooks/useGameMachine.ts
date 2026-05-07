@@ -58,6 +58,7 @@ export function useGameMachine(): GameMachine {
   const drawLock = useRef(false)
   const pressInterval = useRef<number | null>(null)
   const timers = useRef<number[]>([])
+  const autoSpinTimer = useRef<number | null>(null)
   const readySoundPlayed = useRef(false)
 
   const reward =
@@ -211,6 +212,28 @@ export function useGameMachine(): GameMachine {
       playGameSound('error')
     }
   }, [canSpin, clearError, drawMainReward, existingMainReward, isReplayRound, schedule])
+
+  useEffect(() => {
+    if (!canSpin) {
+      if (autoSpinTimer.current) {
+        window.clearTimeout(autoSpinTimer.current)
+        autoSpinTimer.current = null
+      }
+      return undefined
+    }
+
+    autoSpinTimer.current = window.setTimeout(() => {
+      autoSpinTimer.current = null
+      void spinMachine()
+    }, 450)
+
+    return () => {
+      if (autoSpinTimer.current) {
+        window.clearTimeout(autoSpinTimer.current)
+        autoSpinTimer.current = null
+      }
+    }
+  }, [canSpin, spinMachine])
 
   const openCapsule = useCallback(() => {
     if (!reward || phase !== 'capsuleDropped') return

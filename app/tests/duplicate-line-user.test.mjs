@@ -68,13 +68,13 @@ test('returns the existing wallet when the same LINE user registers again', asyn
     assert.equal(lookedUpWallet.customer.phone, '0812345678')
 
     await database.updateRewardTemplate({
-      id: 'discount-600',
-      updates: { weight: 77, stock_remaining: 9, active: false },
+      id: 'protinex-energy-cup',
+      updates: { stock_remaining: 9, active: false },
     })
     await database.migrate()
     const summary = await database.adminSummary()
-    const configuredReward = summary.rewardTemplates.find((item) => item.id === 'discount-600')
-    assert.equal(configuredReward.weight, 77)
+    const configuredReward = summary.rewardTemplates.find((item) => item.id === 'protinex-energy-cup')
+    assert.equal(configuredReward.weight, 9)
     assert.equal(configuredReward.stock_remaining, 9)
     assert.equal(configuredReward.active, false)
   } finally {

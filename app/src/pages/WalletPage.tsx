@@ -39,7 +39,7 @@ export default function WalletPage() {
           <div className="relative z-20 flex items-center justify-between">
             <div>
               <p className="text-sm text-white/75">{state.campaign.name || pharmacyProfile.name}</p>
-              <h1 className="mt-1 font-display text-3xl font-semibold">คูปองของฉัน</h1>
+              <h1 className="mt-1 font-display text-3xl font-semibold">รางวัลของฉัน</h1>
             </div>
             <Wallet size={38} className="text-gold" />
           </div>
@@ -69,15 +69,15 @@ export default function WalletPage() {
           <section className="mt-5 rounded-[18px] border-2 border-[#E2C076] bg-white p-5 text-center shadow-sm">
             <motion.img
               src={cutePetAssets.mascots.cat}
-              alt="แมวน้อยรอคูปองแรก"
+              alt="แมวน้อยรอรางวัลแรก"
               className="mx-auto h-44 object-contain drop-shadow-[0_16px_22px_rgba(82,46,12,0.25)]"
               animate={{ y: [0, -6, 0], rotate: [-3, 3, -3] }}
               transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut' }}
               draggable={false}
             />
-            <h2 className="mt-3 font-display text-2xl font-semibold">ยังไม่มีคูปอง</h2>
+            <h2 className="mt-3 font-display text-2xl font-semibold">ยังไม่มีรางวัล</h2>
             <p className="mt-2 text-sm leading-6 text-ink-medium">
-              เริ่มรับสิทธิ์จากแคมเปญ CNY HEALTHCARE เพื่อเก็บคูปองแรกของคุณ
+              เริ่มรับสิทธิ์จากแคมเปญ CNY HEALTHCARE เพื่อเก็บรางวัลแรกของคุณ
             </p>
             <button
               onClick={() => navigate('/')}
@@ -128,16 +128,13 @@ export default function WalletPage() {
                     <Timer size={14} />
                     หมดอายุ {formatThaiDate(reward.expiryDate)}
                   </div>
-                  <p className="mt-1 font-mono text-sm font-semibold text-ink-medium">
-                    {reward.code}
-                  </p>
                   <button
                     disabled={reward.status !== 'unused'}
-                    onClick={() => navigate(`/redeem?code=${encodeURIComponent(reward.code)}`)}
+                    onClick={() => navigate('/reward')}
                     className="mt-4 flex w-full items-center justify-center gap-2 rounded-[14px] bg-pharmacy-green px-4 py-3 font-semibold text-white disabled:bg-muted disabled:text-ink-light"
                   >
                     <TicketCheck size={16} />
-                    ใช้คูปองที่ร้าน
+                    แสดงหน้ารับของให้พนักงาน
                   </button>
                 </article>
               )

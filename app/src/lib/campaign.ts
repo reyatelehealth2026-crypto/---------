@@ -17,12 +17,14 @@ export interface RewardTemplate {
   description: string
   amount: number
   weight: number
+  stock: number
   image: string
   terms: string
 }
 
 export interface Reward {
   id: string
+  customerId?: string
   templateId: string
   type: RewardKind
   tier: RewardTier
@@ -58,75 +60,69 @@ export const pharmacyProfile = {
   name: 'CNY HEALTHCARE',
   lineHandle: '@clinicya',
   phone: '099-191-5416',
-  campaignTitle: 'ลูกค้าใหม่ แอด LINE รับส่วนลดสูงสุด 600 บาท',
+  campaignTitle: 'ลูกค้าใหม่ แอด LINE เล่นกาชารับของรางวัล',
   campaignSubtitle:
-    'แอด LINE @clinicya เพื่อรับคูปองส่วนลด เก็บสิทธิ์ไว้ใน Wallet และติดตามข่าวสารจาก CNY HEALTHCARE',
+    'แอด LINE @clinicya เพื่อเก็บสิทธิ์ของรางวัลไว้ใน Wallet และรับข่าวสารจาก CNY HEALTHCARE',
 }
 
-const safePharmacyTerms =
-  'ใช้ได้กับสินค้าและบริการสุขภาพที่ร่วมรายการของ CNY HEALTHCARE ตามเงื่อนไขที่กำหนด ไม่สามารถแลกเปลี่ยนเป็นเงินสดได้'
+const productGiftTerms =
+  'แสดงหน้ารางวัลให้พนักงานตรวจสอบและรับสินค้าที่จุดกิจกรรม ของรางวัลมีจำนวนจำกัด ไม่สามารถแลกเปลี่ยนเป็นเงินสดได้'
 
 export const rewardTemplates: RewardTemplate[] = [
   {
-    id: 'discount-600',
+    id: 'protinex-energy-cup',
     tier: 'yellow',
-    name: 'ส่วนลด 600 บาท',
-    description: 'คูปองพิเศษสำหรับลูกค้าใหม่ที่แอด LINE @clinicya ใช้กับยอดซื้อสินค้าสุขภาพที่ร่วมรายการครบ 3,000 บาท',
-    amount: 600,
-    weight: 5,
-    image: '/item-coupon-gold.png',
-    terms: safePharmacyTerms,
-  },
-  {
-    id: 'discount-300',
-    tier: 'purple',
-    name: 'ส่วนลด 300 บาท',
-    description: 'ใช้เป็นส่วนลดสำหรับสินค้าสุขภาพและบริการที่ร่วมรายการ เมื่อมียอดใช้จ่ายครบ 1,500 บาท',
-    amount: 300,
-    weight: 10,
-    image: '/item-coupon-gold.png',
-    terms: safePharmacyTerms,
-  },
-  {
-    id: 'discount-100',
-    tier: 'green',
-    name: 'ส่วนลด 100 บาท',
-    description: 'สำหรับยอดซื้อสินค้าสุขภาพที่ร่วมรายการครบ 799 บาท',
-    amount: 100,
-    weight: 25,
-    image: '/item-supplement-bottle.png',
-    terms: safePharmacyTerms,
-  },
-  {
-    id: 'discount-50',
-    tier: 'blue',
-    name: 'ส่วนลด 50 บาท',
-    description: 'ใช้เป็นส่วนลดทันทีสำหรับสินค้าและบริการสุขภาพที่ร่วมรายการ',
-    amount: 50,
-    weight: 35,
-    image: '/item-coupon-gold.png',
-    terms: safePharmacyTerms,
-  },
-  {
-    id: 'welcome-gift',
-    tier: 'pink',
-    name: 'ของสมนาคุณลูกค้าใหม่',
-    description: 'รับของสมนาคุณที่ CNY HEALTHCARE จัดไว้ในช่วงแคมเปญ',
-    amount: 25,
-    weight: 15,
-    image: '/item-gift-box.png',
-    terms: safePharmacyTerms,
-  },
-  {
-    id: 'care-check',
-    tier: 'white',
-    name: 'ประเมินสุขภาพเบื้องต้นฟรี',
-    description: 'รับบริการประเมินสุขภาพเบื้องต้นหรือคำแนะนำจากทีมดูแลสุขภาพ',
+    name: 'Protinex Energy Cup',
+    description: 'ของรางวัลสำหรับผู้ร่วมกิจกรรม CNY HEALTHCARE',
     amount: 0,
-    weight: 10,
-    image: '/item-supplement-bottle.png',
-    terms:
-      'ใช้บริการได้ตามเวลาทำการของ CNY HEALTHCARE เป็นบริการประเมินเบื้องต้น ไม่ใช่การวินิจฉัยโรค และไม่สามารถแลกเป็นเงินสด',
+    weight: 86,
+    stock: 86,
+    image: '/item-gift-box.png',
+    terms: productGiftTerms,
+  },
+  {
+    id: 'orange-boost-cup',
+    tier: 'purple',
+    name: 'Orange Boost Cup',
+    description: 'ของรางวัลสำหรับผู้ร่วมกิจกรรม CNY HEALTHCARE',
+    amount: 0,
+    weight: 56,
+    stock: 56,
+    image: '/item-gift-box.png',
+    terms: productGiftTerms,
+  },
+  {
+    id: 'eco-style-bag',
+    tier: 'green',
+    name: 'Eco Style Bag',
+    description: 'ของรางวัลสำหรับผู้ร่วมกิจกรรม CNY HEALTHCARE',
+    amount: 0,
+    weight: 36,
+    stock: 36,
+    image: '/item-gift-box.png',
+    terms: productGiftTerms,
+  },
+  {
+    id: 'daily-smart-pen',
+    tier: 'blue',
+    name: 'Daily Smart Pen',
+    description: 'ของรางวัลสำหรับผู้ร่วมกิจกรรม CNY HEALTHCARE',
+    amount: 0,
+    weight: 150,
+    stock: 150,
+    image: '/item-gift-box.png',
+    terms: productGiftTerms,
+  },
+  {
+    id: 'natural-daily-bag',
+    tier: 'pink',
+    name: 'Natural Daily Bag',
+    description: 'ของรางวัลสำหรับผู้ร่วมกิจกรรม CNY HEALTHCARE',
+    amount: 0,
+    weight: 179,
+    stock: 179,
+    image: '/item-gift-box.png',
+    terms: productGiftTerms,
   },
 ]
 
@@ -145,17 +141,18 @@ export function isValidThaiMobile(input: string) {
 }
 
 export function selectRewardTemplate(randomValue = Math.random()) {
-  const totalWeight = rewardTemplates.reduce((sum, item) => sum + item.weight, 0)
+  const availableTemplates = rewardTemplates.filter((item) => item.stock > 0 && item.weight > 0)
+  const totalWeight = availableTemplates.reduce((sum, item) => sum + item.stock, 0)
   const safeRandom = Math.min(Math.max(randomValue, 0), 0.999999)
   const threshold = safeRandom * totalWeight
   let cursor = 0
 
-  for (const template of rewardTemplates) {
-    cursor += template.weight
+  for (const template of availableTemplates) {
+    cursor += template.stock
     if (threshold < cursor) return template
   }
 
-  return rewardTemplates[rewardTemplates.length - 1]
+  return availableTemplates[availableTemplates.length - 1]
 }
 
 export function createReward(

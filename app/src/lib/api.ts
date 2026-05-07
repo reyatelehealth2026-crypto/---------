@@ -57,11 +57,14 @@ export interface AdminParticipant {
   lineUserId?: string | null
   registeredAt: string
   rewardCount: number
+  mainRewardId?: string | null
   mainRewardName?: string | null
   mainRewardCode?: string | null
   mainRewardStatus?: string | null
+  mainRewardUsedAt?: string | null
   lastRewardAt?: string | null
   friendUnlocked: boolean
+  friendshipVerifiedAt?: string | null
 }
 
 const request = async <T>(path: string, init: RequestInit = {}): Promise<T> => {
@@ -133,6 +136,14 @@ export const redeemReward = (code: string, staffPin?: string) =>
     method: 'POST',
     body: JSON.stringify({ code, staffPin }),
   })
+
+export const redeemAdminReward = (rewardId: string, adminKey?: string) => {
+  const query = adminKey ? `?key=${encodeURIComponent(adminKey)}` : ''
+  return request<{ reward: Reward; summary: AdminSummary }>(`/admin/rewards/redeem${query}`, {
+    method: 'POST',
+    body: JSON.stringify({ rewardId }),
+  })
+}
 
 export const fetchAdminSummary = (adminKey?: string) => {
   const query = adminKey ? `?key=${encodeURIComponent(adminKey)}` : ''

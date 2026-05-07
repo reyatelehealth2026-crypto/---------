@@ -75,7 +75,8 @@ test('API persists registration, reward issue, friendship, redeem, and admin sta
     })
 
     assert.equal(firstDraw.reward.id, duplicateDraw.reward.id)
-    assert.match(firstDraw.reward.code, /^RX-JYP-\d{4}$/)
+    assert.equal(typeof firstDraw.reward.id, 'string')
+    assert.match(firstDraw.reward.name, /Cup|Bag|Pen/)
 
     const blockedBonus = await fetch(`${baseUrl}/api/rewards/share-bonus`, {
       method: 'POST',
@@ -96,8 +97,8 @@ test('API persists registration, reward issue, friendship, redeem, and admin sta
     })
     assert.equal(friendship.wallet.friendUnlocked, true)
 
-    const redeemed = await post(baseUrl, '/api/rewards/redeem', {
-      code: firstDraw.reward.code,
+    const redeemed = await post(baseUrl, '/api/admin/rewards/redeem', {
+      rewardId: firstDraw.reward.id,
     })
     assert.equal(redeemed.reward.status, 'used')
 
@@ -110,15 +111,17 @@ test('API persists registration, reward issue, friendship, redeem, and admin sta
     assert.equal(summary.events.redeem, 1)
     assert.equal(summary.participants.length, 1)
     assert.equal(summary.participants[0].phone, '0812345678')
+    assert.equal(summary.participants[0].mainRewardId, firstDraw.reward.id)
+    assert.equal(summary.participants[0].mainRewardStatus, 'used')
 
-    const rewardUpdateResponse = await fetch(`${baseUrl}/api/admin/reward-templates/discount-600`, {
+    const rewardUpdateResponse = await fetch(`${baseUrl}/api/admin/reward-templates/protinex-energy-cup`, {
       method: 'PATCH',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ weight: 7, stock_remaining: 88, active: false }),
+      body: JSON.stringify({ stock_remaining: 88, active: false }),
     })
     const rewardUpdate = await rewardUpdateResponse.json()
     assert.equal(rewardUpdateResponse.ok, true, rewardUpdate.message)
-    assert.equal(rewardUpdate.rewardTemplate.weight, 7)
+    assert.equal(rewardUpdate.rewardTemplate.weight, 88)
     assert.equal(rewardUpdate.rewardTemplate.stock_remaining, 88)
     assert.equal(rewardUpdate.rewardTemplate.active, false)
   } finally {

@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { Hand, Loader2, RotateCw, Smartphone, Sparkles, TicketCheck } from 'lucide-react'
+import { Loader2, RotateCw, Smartphone, Sparkles, TicketCheck } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { cutePetAssets, getCapsuleTheme } from '../lib/gameAssets'
 import AppHeader from '../components/AppHeader'
@@ -32,7 +32,7 @@ export default function GamePage() {
   } = useGameMachine()
 
   const capsuleTheme = getCapsuleTheme(reward?.tier)
-  const progressLabel = charge >= 100 ? 'พลังพร้อมหมุน' : `เติมพลัง ${Math.round(charge)}%`
+  const progressLabel = charge >= 100 ? 'ครบ 100% กำลังสุ่ม...' : `เขย่า ${Math.round(charge)}%`
   const meterLabel = phase === 'intro' ? 'กดเริ่มแล้วเติมพลังเครื่อง' : progressLabel
 
   const machineImage = useMemo(() => {
@@ -61,7 +61,7 @@ export default function GamePage() {
       case 'intro':
         return 'เตรียมหมุนตู้'
       case 'charging':
-        return charge >= 100 ? 'พร้อมหมุนรับแคปซูล' : 'แตะเพื่อเติมพลัง'
+        return charge >= 100 ? 'กำลังปล่อยแคปซูล' : 'เขย่าเพื่อเติมพลัง'
       case 'drawing':
         return 'ตู้กำลังสุ่มของรางวัล'
       case 'capsuleDropped':
@@ -69,7 +69,7 @@ export default function GamePage() {
       case 'opening':
         return 'กำลังเปิดแคปซูล'
       case 'completed':
-        return 'เปิดคูปองสำเร็จ'
+        return 'เปิดรางวัลสำเร็จ'
       case 'error':
         return 'ยังหมุนไม่สำเร็จ'
     }
@@ -82,7 +82,7 @@ export default function GamePage() {
           <Smartphone className="mx-auto text-pharmacy-green" size={42} />
           <h1 className="mt-3 font-display text-2xl font-semibold">ต้องลงทะเบียนก่อนเล่น</h1>
           <p className="mt-2 text-sm leading-6 text-ink-medium">
-            ลงทะเบียนด้วย LINE เดียวกันเพื่อออกคูปองและกันสิทธิ์ซ้ำ
+            ลงทะเบียนด้วย LINE เดียวกันเพื่อออกของรางวัลและกันสิทธิ์ซ้ำ
           </p>
           <button
             onClick={() => navigate('/register')}
@@ -115,7 +115,7 @@ export default function GamePage() {
 
         {hasPlayed && (
           <div className="mb-3 rounded-[12px] border border-[#E2C076] bg-[#FFF6DC] px-3 py-2 text-xs leading-5 text-[#5A2E0F] shadow-sm">
-            เล่นซ้ำได้ไม่จำกัดเพื่อทดลองเกม แต่คูปองจะรับได้เฉพาะครั้งแรก
+            เล่นซ้ำได้ไม่จำกัดเพื่อทดลองเกม แต่ของรางวัลจะรับได้เฉพาะครั้งแรก
           </div>
         )}
 
@@ -353,7 +353,7 @@ export default function GamePage() {
                   {phase === 'completed' && reward && (
                     <div className="absolute inset-x-8 top-7 rounded-[18px] border-2 border-white bg-white/95 px-3 py-2 text-center shadow-[0_12px_24px_rgba(82,46,12,0.18)]">
                       <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-pharmacy-green">
-                        คุณได้คูปอง
+                        คุณได้รางวัล
                       </p>
                       <p className="mt-0.5 line-clamp-2 font-display text-lg font-extrabold leading-tight text-[#3A1A05]">
                         {reward.name}
@@ -469,7 +469,7 @@ export default function GamePage() {
                       addCharge(9)
                     }
                   }}
-                  aria-label={canSpin ? 'หมุนรับแคปซูล' : 'แตะ กดค้าง เพื่อเติมพลัง'}
+                  aria-label={canSpin ? 'กำลังสุ่มแคปซูล' : 'เขย่าเครื่องเพื่อเติมพลัง'}
                   className={`relative grid size-28 select-none place-items-center rounded-full border-[3px] text-center transition-all duration-200 active:scale-95 ${
                     canSpin
                       ? 'border-[#D4B85A] bg-[linear-gradient(180deg,#FFE08A_0%,#E8B445_55%,#C28A1F_100%)] text-[#3A1A05] shadow-[0_18px_38px_rgba(196,140,30,0.55),inset_0_2px_0_rgba(255,255,255,0.55)]'
@@ -482,20 +482,20 @@ export default function GamePage() {
                     aria-hidden="true"
                   />
                   {canSpin ? (
-                    <RotateCw size={38} strokeWidth={2.4} className="relative" />
+                    <Loader2 size={38} strokeWidth={2.4} className="relative animate-spin" />
                   ) : (
-                    <Hand size={42} strokeWidth={2.2} className="relative" />
+                    <Smartphone size={42} strokeWidth={2.2} className="relative" />
                   )}
                   <span className="relative mt-1 text-[11px] font-bold uppercase tracking-[0.18em]">
-                    {canSpin ? 'หมุน!' : 'กดค้าง'}
+                    {canSpin ? 'กำลังสุ่ม' : 'เขย่า'}
                   </span>
                 </button>
               </div>
 
               <p className="text-center text-sm font-semibold leading-5 text-[#5A2E0F]">
                 {canSpin
-                  ? 'พลังเต็มแล้ว แตะปุ่มเพื่อหมุนตู้!'
-                  : 'นิ้วจิ้มค้างที่ปุ่มเพื่อเติมพลัง หรือเขย่ามือถือ'}
+                  ? 'ครบ 100% แล้ว รอแคปซูลออกมา...'
+                  : 'เขย่ามือถือให้ครบ 100% แตะปุ่มได้ถ้าเครื่องไม่รองรับการเขย่า'}
               </p>
             </div>
           )}
@@ -503,7 +503,7 @@ export default function GamePage() {
           {phase === 'drawing' && (
             <div className="mt-4 rounded-[16px] border-2 border-[#E2C076] bg-white/85 px-4 py-3 text-center text-sm font-semibold text-[#5A2E0F] shadow-sm">
               {isReplayRound
-                ? 'ตู้กำลังหมุนในรอบทดลอง และจะไม่ออกคูปองใหม่...'
+                ? 'ตู้กำลังหมุนในรอบทดลอง และจะไม่ออกของรางวัลใหม่...'
                 : 'ตู้กำลังหมุนและล็อกสิทธิ์กับระบบจริง...'}
             </div>
           )}
@@ -513,14 +513,14 @@ export default function GamePage() {
               className="mt-4 rounded-[16px] border-2 border-[#E2C076] bg-white px-4 py-3 text-center text-sm font-extrabold shadow-sm"
               style={{ color: capsuleTheme.text }}
             >
-              ได้ {capsuleTheme.label} แล้ว แตะที่แคปซูลเพื่อเปิดคูปอง
+              ได้ {capsuleTheme.label} แล้ว แตะที่แคปซูลเพื่อเปิดรางวัล
             </div>
           )}
 
           {phase === 'completed' && reward && (
             <div className="mt-4 rounded-[20px] border-2 border-[#E2C076] bg-white/92 p-4 text-center shadow-[0_16px_32px_rgba(82,46,12,0.14)]">
               <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-pharmacy-green">
-                {isReplayRound ? 'คูปองเดิมของคุณ' : 'รางวัลของคุณ'}
+                {isReplayRound ? 'รางวัลเดิมของคุณ' : 'รางวัลของคุณ'}
               </p>
               <h3 className="mt-1 font-display text-2xl font-semibold leading-tight text-[#3A1A05]">
                 {reward.name}
@@ -528,13 +528,13 @@ export default function GamePage() {
               <p className="mt-1 font-mono text-sm font-semibold text-ink-medium">{reward.code}</p>
               {isReplayRound && (
                 <p className="mt-2 text-xs leading-5 text-ink-light">
-                  เล่นซ้ำเพื่อความสนุกได้ ส่วนคูปองยังเป็นสิทธิ์เดิมใน Wallet
+                  เล่นซ้ำเพื่อความสนุกได้ ส่วนรางวัลยังเป็นสิทธิ์เดิมใน Wallet
                 </p>
               )}
               <div className="mt-4 grid gap-2">
                 <GachaButton
                   onClick={() => navigate('/reward')}
-                  label={isReplayRound ? 'ดูคูปองของฉัน' : 'ดูคูปองและปลดล็อก LINE'}
+                  label={isReplayRound ? 'ดูรางวัลของฉัน' : 'ดูรางวัลและปลดล็อก LINE'}
                   iconLeading={<TicketCheck size={18} />}
                   size="lg"
                 />

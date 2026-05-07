@@ -2,8 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import confetti from 'canvas-confetti'
 import { motion, useReducedMotion } from 'framer-motion'
-import { Gift, LockKeyhole, MessageCircle, Share2, Ticket } from 'lucide-react'
-import { formatThaiDate } from '../lib/campaign'
+import { Gift, LockKeyhole, MessageCircle, Share2 } from 'lucide-react'
 import { cutePetAssets, gameAssets, getCapsuleTheme } from '../lib/gameAssets'
 import { useGame } from '../context/GameContext'
 import { openLineOfficialAccount } from '../lib/lineLiff'
@@ -153,7 +152,7 @@ export default function RewardPage() {
                 {capsuleTheme.rarity === 'rare' ? 'Rare Reward' : 'Reward'}
               </span>
               <p className="mt-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-pharmacy-green">
-                คูปองพร้อมใช้
+                รางวัลพร้อมรับ
               </p>
               <p
                 className="mt-2 font-display text-xl font-extrabold leading-tight"
@@ -161,8 +160,8 @@ export default function RewardPage() {
               >
                 {reward.name}
               </p>
-              <p className="mt-3 rounded-full bg-[#FFF6DC] px-3 py-1.5 font-mono text-sm font-semibold tracking-wider text-ink-dark">
-                {reward.code}
+              <p className="mt-3 rounded-full bg-[#FFF6DC] px-3 py-1.5 text-sm font-semibold text-ink-dark">
+                แสดงหน้านี้กับพนักงานเพื่อรับของ
               </p>
             </div>
           </div>
@@ -170,7 +169,7 @@ export default function RewardPage() {
             {capsuleTheme.label} ของคุณเปิดแล้ว
           </p>
           <h1 className="relative z-10 mt-1 font-display text-3xl font-extrabold leading-tight text-[#3A1A05]">
-            เก็บคูปองนี้ไว้ใน Wallet
+            เก็บรางวัลนี้ไว้ใน Wallet
           </h1>
           <p className="relative z-10 mx-auto mt-2 max-w-xs text-sm leading-6 text-ink-medium">
             {reward.description}
@@ -181,15 +180,13 @@ export default function RewardPage() {
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-light">
-                    Redeem code
+                    พร้อมให้พนักงานตรวจสอบ
                   </p>
-                  <p className="mt-1 font-mono text-2xl font-semibold text-pharmacy-green">{reward.code}</p>
+                  <p className="mt-1 text-lg font-semibold text-pharmacy-green">แอด LINE แล้ว รับของได้ที่จุดกิจกรรม</p>
                 </div>
-                <Ticket className="text-gold" size={30} />
+                <Gift className="text-gold" size={30} />
               </div>
               <p className="mt-3 rounded-[12px] bg-sky-wash p-3 text-sm leading-6 text-ink-medium">
-                ใช้ได้ถึง {formatThaiDate(reward.expiryDate)} ที่ {state.campaign.name}
-                <br />
                 {reward.terms}
               </p>
             </div>
@@ -204,9 +201,9 @@ export default function RewardPage() {
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Step 2 / 3</p>
-                <h2 className="mt-1 font-display text-2xl font-semibold">ปลดล็อกคูปองด้วย LINE OA</h2>
+                <h2 className="mt-1 font-display text-2xl font-semibold">ปลดล็อกรางวัลด้วย LINE OA</h2>
                 <p className="mt-2 text-sm leading-6 text-white/80">
-                  เพิ่มเพื่อน LINE @clinicya เพื่อเก็บคูปองไว้ใน Wallet และรับข่าวสารจาก CNY HEALTHCARE
+                  เพิ่มเพื่อน LINE @clinicya เพื่อเก็บรางวัลไว้ใน Wallet และรับข่าวสารจาก CNY HEALTHCARE
                 </p>
               </div>
             </div>
@@ -220,7 +217,7 @@ export default function RewardPage() {
               <div className="self-center text-left">
                 <p className="text-sm font-semibold">{state.campaign.lineHandle}</p>
                 <p className="mt-1 text-xs leading-5 text-ink-light">
-                  เปิด LINE แล้วกดยืนยันเพื่อปลดล็อกคูปองนี้
+                  เปิด LINE แล้วกดยืนยันเพื่อปลดล็อกรางวัลนี้
                 </p>
               </div>
             </div>
@@ -256,7 +253,7 @@ export default function RewardPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Step 3 / 3</p>
             <h2 className="mt-1 font-display text-2xl font-semibold">แชร์ให้เพื่อน รับโบนัสเพิ่ม</h2>
             <p className="mt-2 text-sm leading-6 text-ink-medium">
-              แชร์แคมเปญไปยังเพื่อนใน LINE เพื่อรับโบนัสคูปองอีก 1 ชิ้น หรือข้ามไปเก็บใน Wallet ได้เลย
+              แชร์แคมเปญไปยังเพื่อนใน LINE เพื่อรับโบนัสอีก 1 ชิ้น หรือข้ามไปเก็บใน Wallet ได้เลย
             </p>
             <ErrorBanner message={state.error} className="mt-3" />
             <div className="mt-4 grid gap-3">
@@ -284,7 +281,7 @@ export default function RewardPage() {
         {showingFinalButton && (
           <section className="mt-4 rounded-[20px] border-2 border-[#E2C076] bg-white p-5 text-center shadow-sm">
             <p className="text-sm leading-6 text-ink-medium">
-              คูปองถูกบันทึกใน Wallet แล้ว กำลังพาไปดูรายการรางวัล…
+              รางวัลถูกบันทึกใน Wallet แล้ว กำลังพาไปดูรายการรางวัล…
             </p>
             <button
               onClick={() => {

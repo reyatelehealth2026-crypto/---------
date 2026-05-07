@@ -122,6 +122,14 @@ const routeApi = async (req, res, url) => {
     return send(res, 200, await adminSummary())
   }
 
+  if (url.pathname === '/api/admin/rewards/redeem') {
+    if (req.method !== 'POST') return methodNotAllowed(res)
+    const body = await readBody(req)
+    requireAdmin(url, body)
+    const reward = await redeemReward(body)
+    return send(res, 200, { reward, summary: await adminSummary() })
+  }
+
   if (url.pathname.startsWith('/api/admin/reward-templates/')) {
     if (req.method !== 'PATCH') return methodNotAllowed(res)
     const body = await readBody(req)

@@ -44,7 +44,7 @@ export default function LandingPage() {
       { label: 'แอด LINE', icon: Smartphone },
       { label: 'สมัครสมาชิก', icon: ClipboardCheck },
       { label: 'เล่นเกมส์', icon: Hand },
-      { label: 'รับคูปอง', icon: Gift },
+      { label: 'รับรางวัล', icon: Gift },
     ],
     [],
   )
@@ -98,7 +98,7 @@ export default function LandingPage() {
             transition={{ duration: 0.45, ease: easeSpring }}
             className="rounded-full border border-gold/30 bg-white/90 px-4 py-2 text-xs font-semibold leading-5 text-deep-green shadow-sm"
           >
-            เล่นกาชา 10 วินาที ลุ้นคูปองลูกค้าใหม่
+            เล่นกาชา 10 วินาที ลุ้นของรางวัลลูกค้าใหม่
           </motion.div>
 
           <motion.h1
@@ -126,7 +126,7 @@ export default function LandingPage() {
           >
             {[
               { label: 'แอด LINE', value: 'ง่าย' },
-              { label: 'ลุ้นคูปอง', value: 'ทันที' },
+              { label: 'ลุ้นรางวัล', value: 'ทันที' },
               { label: 'เก็บใน Wallet', value: 'ไม่หาย' },
             ].map((item) => (
               <div
@@ -162,7 +162,7 @@ export default function LandingPage() {
             ) : (
               <div className="space-y-3">
                 <div className="rounded-[8px] border border-gold/35 bg-gold/10 px-4 py-3 text-left text-sm leading-6 text-ink-medium">
-                  เปิดผ่าน LINE เพื่อรับสิทธิ์สำหรับลูกค้าใหม่และเก็บคูปองไว้ใน Wallet
+                  เปิดผ่าน LINE เพื่อรับสิทธิ์สำหรับลูกค้าใหม่และเก็บรางวัลไว้ใน Wallet
                 </div>
                 <a
                   href={liffEntryUrl ?? '#'}
@@ -204,7 +204,7 @@ export default function LandingPage() {
             />
             <motion.img
               src={gameAssets.machine}
-              alt="ตู้กาชาปองรับคูปอง CNY HEALTHCARE"
+              alt="ตู้กาชาปองรับรางวัล CNY HEALTHCARE"
               className="relative z-10 h-auto w-[min(78vw,315px)] object-contain drop-shadow-[0_22px_28px_rgba(82,46,12,0.24)]"
               animate={{ y: [0, -7, 0], rotate: [-0.8, 0.8, -0.8] }}
               transition={{ duration: 4, repeat: shouldReduceMotion ? 0 : Infinity, ease: 'easeInOut' }}
@@ -289,7 +289,7 @@ export default function LandingPage() {
               </div>
               <div className="flex gap-3">
                 <ShieldCheck className="mt-1 shrink-0 text-pharmacy-green" size={20} />
-                <p>คูปองใช้กับสินค้าและบริการสุขภาพที่ร่วมรายการของ CNY HEALTHCARE และไม่สามารถแลกเป็นเงินสด</p>
+                <p>ของรางวัลมีจำนวนจำกัด และไม่สามารถแลกเป็นเงินสด</p>
               </div>
             </div>
           </div>
