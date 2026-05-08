@@ -89,38 +89,6 @@ try {
   await expectVisibleText('คูปองของฉัน')
   await expectVisibleText('โปรไฟล์ LINE')
 
-  const rewardsBeforeReplay = await page.evaluate(async () => {
-    const customerId = window.sessionStorage.getItem('pharmacy-campaign-customer-id')
-    const response = await fetch(`/api/wallet?customerId=${encodeURIComponent(customerId ?? '')}`)
-    const wallet = await response.json()
-    return wallet.rewards.length
-  })
-
-  await page.goto(`${baseUrl}/#/game`, { waitUntil: 'networkidle' })
-  await expectVisibleText('เล่นซ้ำได้ไม่จำกัดเพื่อทดลองเกม')
-  await page.getByRole('button', { name: /เริ่มหมุนตู้/ }).click({ force: true })
-  const replayChargeButton = page.getByRole('button', { name: /แตะ .*เติมพลัง/ })
-  await replayChargeButton.waitFor({ state: 'visible', timeout: 5000 })
-  for (let i = 0; i < 12; i += 1) {
-    if ((await replayChargeButton.count()) === 0) break
-    await replayChargeButton.click({ force: true, delay: 80 })
-    await page.waitForTimeout(80)
-  }
-  const replaySpinButton = page.getByRole('button', { name: /หมุนรับแคปซูล/ })
-  await replaySpinButton.waitFor({ state: 'visible', timeout: 5000 })
-  await replaySpinButton.click({ force: true })
-  await expectVisibleText('แคปซูลของคุณออกมาแล้ว')
-  await page.getByRole('button', { name: /เปิดแคปซูล/ }).click()
-  await expectVisibleText('คูปองเดิมของคุณ')
-
-  const rewardsAfterReplay = await page.evaluate(async () => {
-    const customerId = window.sessionStorage.getItem('pharmacy-campaign-customer-id')
-    const response = await fetch(`/api/wallet?customerId=${encodeURIComponent(customerId ?? '')}`)
-    const wallet = await response.json()
-    return wallet.rewards.length
-  })
-  assert.equal(rewardsAfterReplay, rewardsBeforeReplay)
-
   await page.goto(`${baseUrl}/#/wallet`, { waitUntil: 'networkidle' })
   await expectVisibleText('คูปองของฉัน')
 

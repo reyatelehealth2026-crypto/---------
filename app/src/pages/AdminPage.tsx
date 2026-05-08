@@ -7,6 +7,7 @@ import {
   KeyRound,
   PackageCheck,
   Phone,
+  Plus,
   RefreshCw,
   Save,
   Search,
@@ -17,6 +18,7 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import { formatThaiDate, pharmacyProfile } from '../lib/campaign'
 import {
+  createAdminRewardTemplate,
   fetchAdminSummary,
   redeemAdminReward,
   updateAdminRewardTemplate,
@@ -67,9 +69,15 @@ export default function AdminPage() {
   const [query, setQuery] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [savingId, setSavingId] = useState<string | null>(null)
+  const [isCreatingReward, setIsCreatingReward] = useState(false)
   const [redeemingId, setRedeemingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [newReward, setNewReward] = useState({
+    name: '',
+    stock_remaining: 0,
+    active: true,
+  })
 
   useEffect(() => {
     let cancelled = false
@@ -190,6 +198,30 @@ export default function AdminPage() {
     }
   }
 
+  const createReward = async () => {
+    setIsCreatingReward(true)
+    setError(null)
+    setNotice(null)
+    try {
+      const response = await createAdminRewardTemplate(
+        {
+          name: newReward.name,
+          stock_remaining: Number(newReward.stock_remaining || 0),
+          active: newReward.active,
+        },
+        adminKey.trim() || undefined,
+      )
+      setSummary(response.summary)
+      setDrafts(Object.fromEntries(response.summary.rewardTemplates.map((reward) => [reward.id, { ...reward }])))
+      setNewReward({ name: '', stock_remaining: 0, active: true })
+      setNotice(`เพิ่มรางวัล ${response.rewardTemplate.name} แล้ว`)
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'เพิ่มรางวัลใหม่ไม่สำเร็จ')
+    } finally {
+      setIsCreatingReward(false)
+    }
+  }
+
   const redeemReward = async (participant: AdminParticipant) => {
     if (!participant.mainRewardId) return
 
@@ -284,6 +316,52 @@ export default function AdminPage() {
               <div className="rounded-[8px] bg-muted p-4 text-sm text-ink-medium">กำลังโหลดข้อมูล...</div>
             ) : (
               <div className="space-y-3">
+                <div className="rounded-[8px] border-2 border-dashed border-pharmacy-green/35 bg-sky-wash/55 p-4">
+                  <p className="text-sm font-semibold text-ink-dark">เพิ่มรางวัลใหม่</p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_120px]">
+                    <label className="block text-xs font-semibold text-ink-light">
+                      ชื่อสินค้า
+                      <input
+                        value={newReward.name}
+                        onChange={(event) => setNewReward((current) => ({ ...current, name: event.target.value }))}
+                        className="mt-1 h-11 w-full rounded-[8px] border border-paper-line bg-white px-3 text-sm font-semibold text-ink-dark outline-none focus:border-pharmacy-green"
+                        placeholder="เช่น Gift Set"
+                      />
+                    </label>
+                    <label className="block text-xs font-semibold text-ink-light">
+                      จำนวน
+                      <input
+                        type="number"
+                        min={0}
+                        value={newReward.stock_remaining}
+                        onChange={(event) =>
+                          setNewReward((current) => ({ ...current, stock_remaining: Number(event.target.value || 0) }))
+                        }
+                        className="mt-1 h-11 w-full rounded-[8px] border border-paper-line bg-white px-3 text-sm font-semibold text-ink-dark outline-none focus:border-pharmacy-green"
+                      />
+                    </label>
+                  </div>
+                  <div className="mt-3 flex flex-wrap items-center gap-3">
+                    <label className="flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-semibold text-ink-medium">
+                      <input
+                        type="checkbox"
+                        checked={newReward.active}
+                        onChange={(event) => setNewReward((current) => ({ ...current, active: event.target.checked }))}
+                        className="accent-pharmacy-green"
+                      />
+                      เปิดใช้ทันที
+                    </label>
+                    <button
+                      onClick={() => void createReward()}
+                      disabled={isCreatingReward || !newReward.name.trim()}
+                      className="flex min-h-10 items-center justify-center gap-2 rounded-[8px] bg-pharmacy-green px-4 py-2 text-sm font-semibold text-white transition active:scale-[0.98] disabled:opacity-60"
+                    >
+                      <Plus size={16} />
+                      {isCreatingReward ? 'กำลังเพิ่ม...' : 'เพิ่มรางวัล'}
+                    </button>
+                  </div>
+                </div>
+
                 {(summary?.rewardTemplates ?? []).map((reward) => {
                   const draft = drafts[reward.id] ?? reward
                   return (

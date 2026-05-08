@@ -124,6 +124,19 @@ test('API persists registration, reward issue, friendship, redeem, and admin sta
     assert.equal(rewardUpdate.rewardTemplate.weight, 88)
     assert.equal(rewardUpdate.rewardTemplate.stock_remaining, 88)
     assert.equal(rewardUpdate.rewardTemplate.active, false)
+
+    const createRewardResponse = await fetch(`${baseUrl}/api/admin/reward-templates`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: 'Bonus Gift Set', stock_remaining: 12, active: true }),
+    })
+    const createdReward = await createRewardResponse.json()
+    assert.equal(createRewardResponse.ok, true, createdReward.message)
+    assert.match(createdReward.rewardTemplate.id, /^custom-bonus-gift-set/)
+    assert.equal(createdReward.rewardTemplate.name, 'Bonus Gift Set')
+    assert.equal(createdReward.rewardTemplate.weight, 12)
+    assert.equal(createdReward.rewardTemplate.stock_remaining, 12)
+    assert.equal(createdReward.summary.rewardTemplates.some((item) => item.id === createdReward.rewardTemplate.id), true)
   } finally {
     server.kill('SIGINT')
     await Promise.race([

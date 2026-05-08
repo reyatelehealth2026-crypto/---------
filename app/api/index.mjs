@@ -2,6 +2,7 @@ import './_lib/bootstrap.mjs'
 import { pharmacyProfile } from '../server/campaign.mjs'
 import {
   adminSummary,
+  createRewardTemplate,
   getWallet,
   getWalletByLineAccessToken,
   issueReward,
@@ -105,6 +106,14 @@ export default async function handler(req, res) {
       requireAdmin(body)
       const reward = await redeemReward(body)
       return sendJson(res, 200, { reward, summary: await adminSummary() })
+    }
+
+    if (route === '/admin/reward-templates') {
+      if (!ensureMethod(req, res, 'POST')) return
+      const body = await readJson(req)
+      requireAdmin(body)
+      const rewardTemplate = await createRewardTemplate({ template: body })
+      return sendJson(res, 200, { rewardTemplate, summary: await adminSummary() })
     }
 
     if (route.startsWith('/admin/reward-templates/')) {

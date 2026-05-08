@@ -206,7 +206,9 @@ const migrateSqlite = () => {
   const activeTemplateIds = rewardTemplates.map((template) => template.id)
   if (activeTemplateIds.length > 0) {
     const placeholders = activeTemplateIds.map(() => '?').join(', ')
-    sqliteDb.prepare(`UPDATE reward_templates SET active = 0 WHERE id NOT IN (${placeholders})`).run(...activeTemplateIds)
+    sqliteDb
+      .prepare(`UPDATE reward_templates SET active = 0 WHERE id NOT IN (${placeholders}) AND id NOT LIKE 'custom-%'`)
+      .run(...activeTemplateIds)
   }
 }
 
@@ -305,7 +307,7 @@ const migratePostgres = async () => {
 
   const activeTemplateIds = rewardTemplates.map((template) => template.id)
   if (activeTemplateIds.length > 0) {
-    await sql`UPDATE reward_templates SET active = FALSE WHERE NOT (id = ANY(${activeTemplateIds}))`
+    await sql`UPDATE reward_templates SET active = FALSE WHERE NOT (id = ANY(${activeTemplateIds})) AND id NOT LIKE 'custom-%'`
   }
 }
 
@@ -946,6 +948,111 @@ const cleanRewardTemplatePatch = (input = {}) => {
   return patch
 }
 
+const defaultRewardDescription = 'ของรางวัลสำหรับผู้ร่วมกิจกรรม CNY HEALTHCARE'
+const defaultRewardTerms =
+  rewardTemplates[0]?.terms ??
+  'แสดงหน้ารางวัลให้พนักงานตรวจสอบและรับสินค้าที่จุดกิจกรรม ของรางวัลมีจำนวนจำกัด ไม่สามารถแลกเปลี่ยนเป็นเงินสดได้'
+const defaultRewardImage = rewardTemplates[0]?.image ?? '/item-gift-box.png'
+
+const slugifyRewardName = (name) => {
+  const slug = String(name)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 48)
+  return slug || randomUUID().slice(0, 8)
+}
+
+const buildNewRewardTemplate = (input = {}) => {
+  const name = String(input.name ?? '').trim()
+  if (!name) throw Object.assign(new Error('กรุณากรอกชื่อรางวัล'), { status: 400 })
+
+  const stock = Number(input.stock_remaining ?? input.stockRemaining ?? input.stock ?? 0)
+  if (!Number.isFinite(stock) || stock < 0) {
+    throw Object.assign(new Error('จำนวนรางวัลต้องเป็นตัวเลขมากกว่าหรือเท่ากับ 0'), { status: 400 })
+  }
+
+  return {
+    id: `custom-${slugifyRewardName(name)}`,
+    tier: String(input.tier ?? 'green').trim() || 'green',
+    name,
+    description: String(input.description ?? defaultRewardDescription).trim() || defaultRewardDescription,
+    amount: 0,
+    weight: Math.round(stock),
+    stock_remaining: Math.round(stock),
+    image: String(input.image ?? defaultRewardImage).trim() || defaultRewardImage,
+    terms: String(input.terms ?? defaultRewardTerms).trim() || defaultRewardTerms,
+    active: Object.hasOwn(input, 'active') ? Boolean(input.active) : true,
+  }
+}
+
+export const createRewardTemplate = async ({ template }) => {
+  const base = buildNewRewardTemplate(template)
+
+  if (usePostgres) {
+    let id = base.id
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      const existing = (await sql`SELECT id FROM reward_templates WHERE id = ${id}`)[0]
+      if (!existing) {
+        const inserted = (
+          await sql`
+            INSERT INTO reward_templates (
+              id, tier, name, description, amount, weight, stock_remaining, image, terms, active
+            )
+            VALUES (
+              ${id},
+              ${base.tier},
+              ${base.name},
+              ${base.description},
+              ${base.amount},
+              ${base.weight},
+              ${base.stock_remaining},
+              ${base.image},
+              ${base.terms},
+              ${base.active}
+            )
+            RETURNING *
+          `
+        )[0]
+        return toAdminRewardTemplate(inserted)
+      }
+      id = `${base.id}-${attempt + 2}`
+    }
+    throw Object.assign(new Error('ไม่สามารถสร้างรหัสรางวัลใหม่ได้'), { status: 409 })
+  }
+
+  let id = base.id
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const existing = sqliteDb.prepare('SELECT id FROM reward_templates WHERE id = ?').get(id)
+    if (!existing) {
+      const inserted = sqliteDb
+        .prepare(`
+          INSERT INTO reward_templates (
+            id, tier, name, description, amount, weight, stock_remaining, image, terms, active
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          RETURNING *
+        `)
+        .get(
+          id,
+          base.tier,
+          base.name,
+          base.description,
+          base.amount,
+          base.weight,
+          base.stock_remaining,
+          base.image,
+          base.terms,
+          base.active ? 1 : 0,
+        )
+      return toAdminRewardTemplate(inserted)
+    }
+    id = `${base.id}-${attempt + 2}`
+  }
+  throw Object.assign(new Error('ไม่สามารถสร้างรหัสรางวัลใหม่ได้'), { status: 409 })
+}
+
 export const updateRewardTemplate = async ({ id, updates }) => {
   const rewardId = String(id ?? '').trim()
   if (!rewardId) throw Object.assign(new Error('ไม่พบรหัสรางวัล'), { status: 400 })
@@ -1009,6 +1116,7 @@ export const updateRewardTemplate = async ({ id, updates }) => {
 
 export const adminSummary = async () => {
   const configuredTemplateIds = new Set(rewardTemplates.map((template) => template.id))
+  const isVisibleTemplate = (template) => configuredTemplateIds.has(template.id) || String(template.id).startsWith('custom-')
   if (usePostgres) {
     const eventRows = await sql`SELECT type, count(*)::int as total FROM campaign_events GROUP BY type`
     const events = Object.fromEntries(eventRows.map((row) => [row.type, row.total]))
@@ -1018,9 +1126,7 @@ export const adminSummary = async () => {
       GROUP BY source
       ORDER BY total DESC
     `
-    const templates = (await sql`SELECT * FROM reward_templates ORDER BY weight DESC`).filter((template) =>
-      configuredTemplateIds.has(template.id),
-    )
+    const templates = (await sql`SELECT * FROM reward_templates ORDER BY weight DESC`).filter(isVisibleTemplate)
     const participants = await sql`
       SELECT
         c.id,
@@ -1072,9 +1178,7 @@ export const adminSummary = async () => {
       ORDER BY total DESC
     `)
     .all()
-  const templates = sqliteDb.prepare('SELECT * FROM reward_templates ORDER BY weight DESC').all().filter((template) =>
-    configuredTemplateIds.has(template.id),
-  )
+  const templates = sqliteDb.prepare('SELECT * FROM reward_templates ORDER BY weight DESC').all().filter(isVisibleTemplate)
   const participants = sqliteDb
     .prepare(`
       SELECT

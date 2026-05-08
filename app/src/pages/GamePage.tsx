@@ -14,12 +14,11 @@ import { useGameMachine } from '../hooks/useGameMachine'
 export default function GamePage() {
   const navigate = useNavigate()
   const shouldReduceMotion = useReducedMotion()
-  const { state, hasPlayed } = useGame()
+  const { state } = useGame()
   const {
     phase,
     charge,
     reward,
-    isReplayRound,
     canSpin,
     startGame,
     startPressCharge,
@@ -28,7 +27,6 @@ export default function GamePage() {
     spinMachine,
     openCapsule,
     retrySpin,
-    playAgain,
   } = useGameMachine()
 
   const capsuleTheme = getCapsuleTheme(reward?.tier)
@@ -112,12 +110,6 @@ export default function GamePage() {
       />
       <div className="mx-auto max-w-[430px]">
         <AppHeader showBack onBack={handleBack} />
-
-        {hasPlayed && (
-          <div className="mb-3 rounded-[12px] border border-[#E2C076] bg-[#FFF6DC] px-3 py-2 text-xs leading-5 text-[#5A2E0F] shadow-sm">
-            เล่นซ้ำได้ไม่จำกัดเพื่อทดลองเกม แต่ของรางวัลจะรับได้เฉพาะครั้งแรก
-          </div>
-        )}
 
         <section className="relative mt-1 overflow-hidden rounded-[24px] border-2 border-[#E8BE57] bg-[linear-gradient(180deg,#FFF8DC_0%,#FFF0BD_52%,#FFE7A8_100%)] p-3 shadow-[0_26px_60px_rgba(82,46,12,0.20)]">
           <div className="pointer-events-none absolute inset-x-5 top-0 h-20 rounded-full bg-white/35 blur-2xl" />
@@ -502,9 +494,7 @@ export default function GamePage() {
 
           {phase === 'drawing' && (
             <div className="mt-4 rounded-[16px] border-2 border-[#E2C076] bg-white/85 px-4 py-3 text-center text-sm font-semibold text-[#5A2E0F] shadow-sm">
-              {isReplayRound
-                ? 'ตู้กำลังหมุนในรอบทดลอง และจะไม่ออกของรางวัลใหม่...'
-                : 'ตู้กำลังหมุนและล็อกสิทธิ์กับระบบจริง...'}
+              ตู้กำลังหมุนและล็อกสิทธิ์กับระบบจริง...
             </div>
           )}
 
@@ -520,30 +510,18 @@ export default function GamePage() {
           {phase === 'completed' && reward && (
             <div className="mt-4 rounded-[20px] border-2 border-[#E2C076] bg-white/92 p-4 text-center shadow-[0_16px_32px_rgba(82,46,12,0.14)]">
               <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-pharmacy-green">
-                {isReplayRound ? 'รางวัลเดิมของคุณ' : 'รางวัลของคุณ'}
+                รางวัลของคุณ
               </p>
               <h3 className="mt-1 font-display text-2xl font-semibold leading-tight text-[#3A1A05]">
                 {reward.name}
               </h3>
-              <p className="mt-1 font-mono text-sm font-semibold text-ink-medium">{reward.code}</p>
-              {isReplayRound && (
-                <p className="mt-2 text-xs leading-5 text-ink-light">
-                  เล่นซ้ำเพื่อความสนุกได้ ส่วนรางวัลยังเป็นสิทธิ์เดิมใน Wallet
-                </p>
-              )}
               <div className="mt-4 grid gap-2">
                 <GachaButton
                   onClick={() => navigate('/reward')}
-                  label={isReplayRound ? 'ดูรางวัลของฉัน' : 'ดูรางวัลและปลดล็อก LINE'}
+                  label="ดูรางวัลและปลดล็อก LINE"
                   iconLeading={<TicketCheck size={18} />}
                   size="lg"
                 />
-                <button
-                  onClick={playAgain}
-                  className="rounded-[14px] border-2 border-pharmacy-green bg-white px-4 py-3 text-sm font-semibold text-pharmacy-green shadow-sm"
-                >
-                  เล่นทดลองอีกครั้ง
-                </button>
               </div>
             </div>
           )}

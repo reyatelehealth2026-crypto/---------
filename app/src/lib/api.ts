@@ -144,6 +144,17 @@ export const fetchAdminSummary = (adminKey?: string) => {
   return request<AdminSummary>(`/admin/summary${query}`)
 }
 
+export const createAdminRewardTemplate = (
+  reward: Pick<AdminRewardTemplate, 'name' | 'stock_remaining' | 'active'>,
+  adminKey?: string,
+) => {
+  const query = adminKey ? `?key=${encodeURIComponent(adminKey)}` : ''
+  return request<{ rewardTemplate: AdminRewardTemplate; summary: AdminSummary }>(`/admin/reward-templates${query}`, {
+    method: 'POST',
+    body: JSON.stringify(reward),
+  })
+}
+
 export const updateAdminRewardTemplate = (
   rewardId: string,
   updates: Partial<Pick<AdminRewardTemplate, 'name' | 'description' | 'amount' | 'weight' | 'stock_remaining' | 'terms' | 'active'>>,

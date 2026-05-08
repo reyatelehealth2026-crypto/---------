@@ -4,6 +4,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
   adminSummary,
+  createRewardTemplate,
   getWallet,
   getWalletByLineAccessToken,
   issueReward,
@@ -121,6 +122,14 @@ const routeApi = async (req, res, url) => {
     requireAdmin(url, body)
     const reward = await redeemReward(body)
     return send(res, 200, { reward, summary: await adminSummary() })
+  }
+
+  if (url.pathname === '/api/admin/reward-templates') {
+    if (req.method !== 'POST') return methodNotAllowed(res)
+    const body = await readBody(req)
+    requireAdmin(url, body)
+    const rewardTemplate = await createRewardTemplate({ template: body })
+    return send(res, 200, { rewardTemplate, summary: await adminSummary() })
   }
 
   if (url.pathname.startsWith('/api/admin/reward-templates/')) {
