@@ -107,7 +107,7 @@ export default function WalletPage() {
                       <div className="flex items-center gap-2">
                         <CoinIcon variant={coinVariant} className="h-6 w-6 object-contain" />
                         <p className="text-xs font-semibold" style={{ color: theme.text }}>
-                          {reward.type === 'bonus' ? 'โบนัสแชร์' : 'รางวัลหลัก'}
+                          รางวัล
                         </p>
                       </div>
                       <h2 className="mt-1 font-display text-lg font-semibold leading-tight">

@@ -91,13 +91,6 @@ const routeApi = async (req, res, url) => {
     return send(res, 200, { reward, wallet: await getWallet(body.customerId) })
   }
 
-  if (url.pathname === '/api/rewards/share-bonus') {
-    if (req.method !== 'POST') return methodNotAllowed(res)
-    const body = await readBody(req)
-    const reward = await issueReward({ customerId: body.customerId, type: 'bonus', tracking: body.tracking })
-    return send(res, 200, { reward, wallet: await getWallet(body.customerId) })
-  }
-
   if (url.pathname === '/api/friendships/verify') {
     if (req.method !== 'POST') return methodNotAllowed(res)
     const body = await readBody(req)

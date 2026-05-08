@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import confetti from 'canvas-confetti'
 import { motion, useReducedMotion } from 'framer-motion'
-import { Gift, LockKeyhole, MessageCircle, Share2 } from 'lucide-react'
+import { Gift, LockKeyhole, MessageCircle } from 'lucide-react'
 import { cutePetAssets, gameAssets, getCapsuleTheme } from '../lib/gameAssets'
 import { useGame } from '../context/GameContext'
 import { openLineOfficialAccount } from '../lib/lineLiff'
@@ -12,28 +12,26 @@ import GameImage from '../components/game/GameImage'
 import CutePetBackground from '../components/game/CutePetBackground'
 import { playGameSound } from '../lib/gameAudio'
 
-type RewardStep = 'friend' | 'share' | 'done'
+type RewardStep = 'friend' | 'done'
 
-const resolveStep = (friendUnlocked: boolean, shareBonusClaimed: boolean): RewardStep => {
+const resolveStep = (friendUnlocked: boolean): RewardStep => {
   if (!friendUnlocked) return 'friend'
-  if (!shareBonusClaimed) return 'share'
   return 'done'
 }
 
 export default function RewardPage() {
   const navigate = useNavigate()
   const shouldReduceMotion = useReducedMotion()
-  const { state, confirmFriendGateManually, claimShareBonus } = useGame()
+  const { state, confirmFriendGateManually } = useGame()
   const reward = state.rewards.find((item) => item.id === state.lastRewardId) ?? state.rewards[0]
   const capsuleTheme = useMemo(() => getCapsuleTheme(reward?.tier), [reward?.tier])
-  const step = resolveStep(state.friendUnlocked, state.shareBonusClaimed)
-  const [skippedShare, setSkippedShare] = useState(false)
+  const step = resolveStep(state.friendUnlocked)
 
   useEffect(() => {
-    if (step !== 'done' && !skippedShare) return
+    if (step !== 'done') return
     const id = window.setTimeout(() => navigate('/wallet'), 1500)
     return () => window.clearTimeout(id)
-  }, [navigate, skippedShare, step])
+  }, [navigate, step])
 
   if (!reward) {
     return (
@@ -60,20 +58,8 @@ export default function RewardPage() {
       .catch(() => undefined)
   }
 
-  const share = async () => {
-    if (state.shareBonusClaimed) return
-    playGameSound('uiTap')
-    try {
-      await claimShareBonus()
-      playGameSound('reward')
-      confetti({ particleCount: 60, spread: 55, origin: { y: 0.75 } })
-    } catch {
-      // GameContext stores the visible error.
-    }
-  }
-
   const unlocked = state.friendUnlocked
-  const showingFinalButton = step === 'done' || skippedShare
+  const showingFinalButton = step === 'done'
 
   return (
     <div className="relative min-h-full overflow-hidden bg-[#F6EED8] px-4 pb-20 pt-4 text-ink-dark">
@@ -200,7 +186,7 @@ export default function RewardPage() {
                 <LockKeyhole size={24} />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Step 2 / 3</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Step 2 / 2</p>
                 <h2 className="mt-1 font-display text-2xl font-semibold">ปลดล็อกรางวัลด้วย LINE OA</h2>
                 <p className="mt-2 text-sm leading-6 text-white/80">
                   เพิ่มเพื่อน LINE @clinicya เพื่อเก็บรางวัลไว้ใน Wallet และรับข่าวสารจาก CNY HEALTHCARE
@@ -243,36 +229,6 @@ export default function RewardPage() {
               >
                 <LockKeyhole size={18} />
                 {state.isSubmitting ? 'กำลังตรวจสอบกับ LINE...' : 'ตรวจสอบการเพิ่มเพื่อน LINE'}
-              </button>
-            </div>
-          </section>
-        )}
-
-        {step === 'share' && !skippedShare && (
-          <section className="mt-4 rounded-[20px] border-2 border-[#E2C076] bg-white p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Step 3 / 3</p>
-            <h2 className="mt-1 font-display text-2xl font-semibold">แชร์ให้เพื่อน รับโบนัสเพิ่ม</h2>
-            <p className="mt-2 text-sm leading-6 text-ink-medium">
-              แชร์แคมเปญไปยังเพื่อนใน LINE เพื่อรับโบนัสอีก 1 ชิ้น หรือข้ามไปเก็บใน Wallet ได้เลย
-            </p>
-            <ErrorBanner message={state.error} className="mt-3" />
-            <div className="mt-4 grid gap-3">
-              <button
-                onClick={share}
-                disabled={state.isSubmitting}
-                className="flex w-full items-center justify-center gap-2 rounded-[16px] bg-pharmacy-green px-4 py-4 font-semibold text-white shadow-button disabled:bg-muted disabled:text-ink-light"
-              >
-                <Share2 size={18} />
-                {state.isSubmitting ? 'กำลังแชร์...' : 'แชร์รับโบนัส'}
-              </button>
-              <button
-                onClick={() => {
-                  playGameSound('uiTap')
-                  setSkippedShare(true)
-                }}
-                className="rounded-[16px] border-2 border-pharmacy-green bg-white px-4 py-3 text-sm font-semibold text-pharmacy-green"
-              >
-                ข้าม เก็บใน Wallet
               </button>
             </div>
           </section>

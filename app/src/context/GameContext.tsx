@@ -5,7 +5,6 @@ import { pharmacyProfile } from '../lib/campaign'
 import type { BootstrapResponse, ServerCustomer, WalletResponse } from '../lib/api'
 import {
   bootstrapCampaign,
-  claimShareBonus as claimShareBonusApi,
   drawMainReward as drawMainRewardApi,
   fetchWallet,
   lookupCustomerByLine,
@@ -18,7 +17,6 @@ import {
   getDevLineTestSession,
   initializeLine,
   requestLineFriendship,
-  shareCampaignToLine,
   verifyCurrentLineFriendship,
 } from '../lib/lineLiff'
 
@@ -27,7 +25,6 @@ interface GameState {
   customer: ServerCustomer | null
   rewards: Reward[]
   friendUnlocked: boolean
-  shareBonusClaimed: boolean
   lastRewardId: string | null
   campaign: BootstrapResponse['campaign']
   lineConfig: BootstrapResponse['line']
@@ -45,7 +42,6 @@ interface GameContextType {
   drawMainReward: () => Promise<Reward>
   unlockFriendGate: () => Promise<void>
   confirmFriendGateManually: () => Promise<void>
-  claimShareBonus: () => Promise<Reward>
   redeemReward: (code: string, staffPin?: string) => Promise<Reward>
   refreshWallet: () => Promise<void>
   clearSession: () => void
@@ -76,7 +72,6 @@ const initialState = (tracking: TrackingParams): GameState => ({
   customer: null,
   rewards: [],
   friendUnlocked: false,
-  shareBonusClaimed: false,
   lastRewardId: null,
   campaign: pharmacyProfile,
   lineConfig: {
@@ -94,7 +89,6 @@ const applyWallet = (state: GameState, wallet: WalletResponse): GameState => ({
   customer: wallet.customer,
   rewards: wallet.rewards,
   friendUnlocked: wallet.friendUnlocked,
-  shareBonusClaimed: wallet.rewards.some((reward) => reward.type === 'bonus'),
 })
 
 export function GameProvider({ children }: { children: ReactNode }) {
@@ -256,26 +250,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }
   }, [state.customer, state.line?.accessToken, state.line?.profile?.userId, state.tracking])
 
-  const claimShareBonus = useCallback(async () => {
-    if (!state.customer) throw new Error('ต้องลงทะเบียนก่อนรับโบนัส')
-    setSubmitting(true)
-    try {
-      await shareCampaignToLine()
-      const response = await claimShareBonusApi(state.customer.id, state.tracking)
-      setState((prev) => ({
-        ...applyWallet(prev, response.wallet),
-        lastRewardId: response.reward.id,
-        error: null,
-      }))
-      return response.reward
-    } catch (error) {
-      setError(error)
-      throw error
-    } finally {
-      setSubmitting(false)
-    }
-  }, [state.customer, state.tracking])
-
   const redeemReward = useCallback(async (code: string, staffPin?: string) => {
     setSubmitting(true)
     try {
@@ -298,7 +272,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
       customer: null,
       rewards: [],
       friendUnlocked: false,
-      shareBonusClaimed: false,
       lastRewardId: null,
     }))
   }, [])
@@ -317,7 +290,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
       drawMainReward,
       unlockFriendGate,
       confirmFriendGateManually,
-      claimShareBonus,
       redeemReward,
       refreshWallet,
       clearSession,
@@ -330,7 +302,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
       drawMainReward,
       unlockFriendGate,
       confirmFriendGateManually,
-      claimShareBonus,
       redeemReward,
       refreshWallet,
       clearSession,

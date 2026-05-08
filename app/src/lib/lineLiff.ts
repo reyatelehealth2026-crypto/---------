@@ -164,17 +164,3 @@ export const openLineOfficialAccount = async () => {
   }
   window.open(url, '_blank', 'noopener,noreferrer')
 }
-
-export const shareCampaignToLine = async () => {
-  if (!liffId) throw new Error('ยังไม่ได้ตั้งค่า VITE_LIFF_ID')
-  if (!liff.isApiAvailable('shareTargetPicker')) {
-    throw new Error('ยังไม่ได้เปิด shareTargetPicker ใน LINE Developers Console')
-  }
-
-  await liff.shareTargetPicker([
-    {
-      type: 'text',
-      text: `มาใช้สิทธิ์ ${import.meta.env.VITE_CAMPAIGN_TITLE || 'สิทธิพิเศษจาก CNY HEALTHCARE'} ผ่าน LINE @clinicya: ${window.location.href}`,
-    },
-  ])
-}

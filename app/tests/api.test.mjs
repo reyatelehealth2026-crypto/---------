@@ -78,7 +78,7 @@ test('API persists registration, reward issue, friendship, redeem, and admin sta
     assert.equal(typeof firstDraw.reward.id, 'string')
     assert.match(firstDraw.reward.name, /Cup|Bag|Pen/)
 
-    const blockedBonus = await fetch(`${baseUrl}/api/rewards/share-bonus`, {
+    const removedBonus = await fetch(`${baseUrl}/api/rewards/share-bonus`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
@@ -86,7 +86,7 @@ test('API persists registration, reward issue, friendship, redeem, and admin sta
         tracking: { branch: 'test', qrId: 'front01' },
       }),
     })
-    assert.equal(blockedBonus.status, 403)
+    assert.equal(removedBonus.status, 404)
 
     const friendship = await post(baseUrl, '/api/friendships/verify', {
       customerId: registered.customer.id,

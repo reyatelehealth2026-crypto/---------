@@ -125,12 +125,6 @@ export const verifyFriendship = (payload: {
     body: JSON.stringify(payload),
   })
 
-export const claimShareBonus = (customerId: string, tracking: TrackingParams) =>
-  request<{ reward: Reward; wallet: WalletResponse }>('/rewards/share-bonus', {
-    method: 'POST',
-    body: JSON.stringify({ customerId, tracking }),
-  })
-
 export const redeemReward = (code: string, staffPin?: string) =>
   request<{ reward: Reward }>('/rewards/redeem', {
     method: 'POST',

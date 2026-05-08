@@ -75,13 +75,6 @@ export default async function handler(req, res) {
       return sendJson(res, 200, { reward, wallet: await getWallet(body.customerId) })
     }
 
-    if (route === '/rewards/share-bonus') {
-      if (!ensureMethod(req, res, 'POST')) return
-      const body = await readJson(req)
-      const reward = await issueReward({ customerId: body.customerId, type: 'bonus', tracking: body.tracking })
-      return sendJson(res, 200, { reward, wallet: await getWallet(body.customerId) })
-    }
-
     if (route === '/friendships/verify') {
       if (!ensureMethod(req, res, 'POST')) return
       const body = await readJson(req)
@@ -104,6 +97,14 @@ export default async function handler(req, res) {
       if (!ensureMethod(req, res, 'GET')) return
       requireAdmin()
       return sendJson(res, 200, await adminSummary())
+    }
+
+    if (route === '/admin/rewards/redeem') {
+      if (!ensureMethod(req, res, 'POST')) return
+      const body = await readJson(req)
+      requireAdmin(body)
+      const reward = await redeemReward(body)
+      return sendJson(res, 200, { reward, summary: await adminSummary() })
     }
 
     if (route.startsWith('/admin/reward-templates/')) {
